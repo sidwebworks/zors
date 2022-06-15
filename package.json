@@ -7,13 +7,12 @@
     "packages/*"
   ],
   "scripts": {
-    "postinstall": "pnpx husky-init",
     "build": "turbo run build",
     "dev": "turbo run dev --parallel",
     "test": "turbo run test --parallel",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,md}\"",
-    "prepare": "husky install"
+    "postinstall": "husky install"
   },
   "devDependencies": {
     "@commitlint/cli": "17.0.2",

@@ -3,9 +3,8 @@
   "display": "Library",
   "extends": "./base.json",
   "compilerOptions": {
-    "lib": ["ES2015"],
+    "lib": ["ES2020"],
     "module": "ESNext",
-    "target": "ES6",
-    "jsx": "react-jsx"
+    "target": "ES2020"
   }
 }
