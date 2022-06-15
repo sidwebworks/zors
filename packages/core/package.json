@@ -1,0 +1,33 @@
+{
+  "name": "@acme/core",
+  "version": "0.0.0",
+  "license": "MIT",
+  "type": "module",
+  "author": "Sidwebworks",
+  "description": "A CLI Framework",
+  "publishConfig": {
+    "access": "public"
+  },
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "import": "./dist/index.js"
+  },
+  "scripts": {
+    "postinstall": "pnpx husky-init",
+    "build": "NODE_ENV=production tsup --dts-resolve",
+    "dev": "NODE_ENV=development tsup --watch",
+    "test": "vitest run",
+    "prepublishOnly": "pnpm run build",
+    "prepare": "husky install"
+  },
+  "devDependencies": {
+    "tsconfig": "workspace:*",
+    "config": "workspace:*",
+    "husky": "^8.0.0"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:base", "schedule:weekly"],
+  "labels": ["dependencies"],
+  "enabled": false,
+  "commitMessageAction": "🤖 Update",
+  "lockFileMaintenance": { "enabled": true },
+  "pin": { "enabled": true },
+  "rangeStrategy": "bump",
+  "packageRules": [
+    {
+      "updateTypes": ["minor", "patch"],
+      "automerge": true
+    },
+    {
+      "packageNames": ["node"],
+      "enabled": false
+    }
+  ]
+}
