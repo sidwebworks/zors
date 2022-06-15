@@ -2,18 +2,21 @@ import { Command } from "./command";
 import fs from "fs-jetpack";
 import parse from "yargs-parser";
 import { isCommand, isCommandPath } from "./types";
-import Module from "module";
+import { EventEmitter } from "events";
 
 interface ProgramOptions {
   name: string;
   description: string;
 }
 
+type LifecyleEvents = "beforeExit" | "beforeRun" | "afterRun";
+
 export class Program {
   private commands: Map<string, Command>;
-  private name: string;
-  private description: string;
+  public name: string;
+  public description: string;
   private stack: Promise<any>[] = [];
+  private emitter = new EventEmitter();
 
   constructor({ name, description }: ProgramOptions) {
     this.commands = new Map();
@@ -21,16 +24,15 @@ export class Program {
     this.description = description;
   }
 
-  public async execute(input: string | string[]) {
+  async run(input: string | string[]) {
     if (this.stack.length > 0) {
       const modules = await Promise.all(this.stack);
 
       modules.forEach((m) => {
         const command = m.default;
         this.commands.set(command.name, command);
+        this.stack.pop();
       });
-
-      this.stack = [];
     }
 
     const {
@@ -38,30 +40,34 @@ export class Program {
       ...options
     } = parse(input);
 
-    console.log(name, args, options);
-
     const command = this.commands.get(String(name));
 
     if (!command) throw new Error(`Unknown command ${name}`);
 
-    console.log(command);
+    this.emitter.emit("beforeRun", this);
 
-    command.run(args, options);
+    await command.execute({ args, options });
+
+    this.emitter.emit("afterRun", this);
   }
 
-  addCommand(maybeCommand: Command | string) {
+  addCommand<T extends Command<any, any>>(maybeCommand: T | string) {
     if (isCommand(maybeCommand)) {
       this.commands.set(maybeCommand.name, maybeCommand);
-
       return this;
     }
 
     if (isCommandPath(maybeCommand) && fs.exists(maybeCommand)) {
       this.stack.push(import(maybeCommand));
-
       return this;
     }
 
     throw new Error(`Cannout resolve command ${maybeCommand}`);
+  }
+
+  on(key: LifecyleEvents, listener: (program: Program) => void) {
+    this.emitter.on(key, listener);
+
+    return () => this.emitter.off(key, listener);
   }
 }
