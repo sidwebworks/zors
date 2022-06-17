@@ -1,4 +1,3 @@
 # ZORS
-
-- A fast modern and flexible framework for building CLIs
+> A fast, modern and flexible framework for building CLIs
 
