@@ -1,0 +1,16 @@
+{
+  "name": "demo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "type": "module",
+  "scripts": {
+    "dev": "tsup main.ts --watch"
+  },
+  "devDependencies": {
+    "tsconfig": "workspace:*"
+  },
+  "dependencies": {
+    "@zors/core": "workspace:*"
+  }
+}
