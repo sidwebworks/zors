@@ -1,35 +1,28 @@
-import colors from "ansi-colors";
-import { existsSync } from "fs";
-import { Command, RootCommand } from "./command";
-import { Emitter } from "./lib/emitter";
-import { ZorsError } from "./lib/error";
-import { Logger } from "./lib/logger";
-import { parse } from "./lib/parser";
-import { findAllBrackets, removeBrackets } from "./lib/utils";
-import { CommandConfig, ParseOptions, Tools } from "./types";
-import { isCommand } from "./types/guards";
-
-type ProgramEvents =
-  | "onBeforeRun"
-  | "onAfterRun"
-  | "onError"
-  | "onExit"
-  | "onRegister";
-
-interface ProgramConfig {
-  parser?: ParseOptions;
-  tools?: Tools;
-  captureErrors?: boolean;
-}
+import colors from 'ansi-colors';
+import { Command, RootCommand } from './command';
+import { Emitter } from './lib/emitter';
+import { ZorsError } from './lib/error';
+import { Logger } from './lib/logger';
+import { parse } from './lib/parser';
+import { findAllBrackets, removeBrackets } from './lib/utils';
+import { Option } from './option';
+import {
+  CommandConfig,
+  ParseOptions,
+  ProgramConfig,
+  ProgramEvents,
+  Tools,
+} from './types';
+import { isCommand } from './types/guards';
 
 const defaultConfig: ProgramConfig = {
   parser: {},
   tools: { logger: Logger(), colors },
-  captureErrors: true,
+  captureErrors: false,
 };
 
 export class Program extends Emitter<Record<ProgramEvents, Program>> {
-  commands: Command[];
+  commands: Command<any, any>[];
   tools: Tools;
   raw: string[];
   args: (string | number)[];
@@ -40,7 +33,7 @@ export class Program extends Emitter<Record<ProgramEvents, Program>> {
   /**
    * @param name Program name to display in help and version
    */
-  constructor(public name: string = "", public config: ProgramConfig = {}) {
+  constructor(public name: string = '', public config: ProgramConfig = {}) {
     super();
     this.args = [];
     this.raw = [];
@@ -56,11 +49,24 @@ export class Program extends Emitter<Record<ProgramEvents, Program>> {
     return this;
   }
 
-  command(raw: string, description: string, config?: CommandConfig) {
-    const command = new Command(removeBrackets(raw), raw, description, config);
+  command<A extends any[] = any[], O extends Record<string, any> = {}>(
+    raw: string,
+    description: string,
+    config?: CommandConfig
+  ) {
+    const command = new Command<A, O>(
+      removeBrackets(raw),
+      raw,
+      description,
+      config
+    );
+
     command.args = findAllBrackets(raw);
+
     this.commands.push(command);
+
     command.register(this);
+
     return command;
   }
 
@@ -70,31 +76,56 @@ export class Program extends Emitter<Record<ProgramEvents, Program>> {
       maybeCommand.register(this);
     }
 
-    if (typeof maybeCommand === "string") {
+    if (typeof maybeCommand === 'string') {
       this.importQueue.push(import(maybeCommand));
     }
 
     return this;
   }
 
-  parse(input: string[]) {
-    const aliases: ParseOptions["alias"] = {
-      version: ["v"],
+  private getParserOptions(command?: Command<any, any>) {
+    const config: ParseOptions = {
+      alias: {
+        version: ['v'],
+      },
+      boolean: [],
     };
 
-    for (let command of this.commands) {
-      aliases[command.name] = command.aliases;
+    const allOptions = [...this.root.options].concat(command?.options || []);
+
+    for (const [index, option] of allOptions.entries()) {
+      if (option.names.length > 0) {
+        config.alias![option.names[0]] = option.names.slice();
+      }
+
+      if (option.isBoolean) {
+        if (option.negated) {
+          const hasStringTypeOption = allOptions.some((o, i) => {
+            return (
+              i !== index &&
+              o.names.some((name) => option.names.includes(name)) &&
+              typeof o.required === 'boolean'
+            );
+          });
+
+          if (!hasStringTypeOption && Array.isArray(config.boolean)) {
+            config.boolean.push(option.names[0]);
+          }
+        } else if (Array.isArray(config.boolean)) {
+          config.boolean.push(option.names[0]);
+        }
+      }
     }
 
-    const config = Object.assign({}, this.config.parser, {
-      alias: aliases,
-    });
+    for (let command of this.commands) {
+      config.alias![command.name] = command.aliases;
+    }
 
-    const { _: args, ...options } = parse(input, config);
+    return Object.assign({}, this.config.parser, config);
+  }
 
-    this.args = args;
-    this.options = options;
-    this.raw = input;
+  parse(input: string[], opts?: ParseOptions) {
+    const { _: args, ...options } = parse(input, opts);
 
     return { args, options };
   }
@@ -106,9 +137,8 @@ export class Program extends Emitter<Record<ProgramEvents, Program>> {
       });
 
       modules.forEach((m) => {
-        const command = m.default;
-        this.commands.push(command);
-        command.register(this);
+        this.commands.push(m.default);
+        m.default.register(this);
         this.importQueue.pop();
       });
     }
@@ -116,23 +146,32 @@ export class Program extends Emitter<Record<ProgramEvents, Program>> {
 
   async run(input: string[]) {
     try {
-      this.emit("onBeforeRun", this);
+      this.emit('onBeforeRun', this);
 
       await this.resolveCommandImports();
+
+      const parserOptions = this.getParserOptions();
+      console.log('parserOptions: ', parserOptions);
 
       const {
         args: [name, ...args],
         options,
-      } = this.parse(input);
+      } = this.parse(input, parserOptions);
+
+      this.args = args;
+      this.options = options;
+      this.raw = input;
 
       const _name = String(name);
 
       const command = this.commands.find((c) => c.match(_name)) || this.root;
 
       if (command) {
-        if (command.hasOption("version")) {
+        if (command.hasOption('version')) {
           return command.printVersion();
         }
+
+        command.checkRequiredArgs();
 
         const _args = command.args.reduce<any[]>((acc, curr, index) => {
           if (curr.variadic) {
@@ -146,12 +185,12 @@ export class Program extends Emitter<Record<ProgramEvents, Program>> {
         await command.execute(_args, options, this.tools);
       }
     } catch (err: any) {
-      this.emit("onError", { error: err, program: this });
+      this.emit('onError', { error: err, program: this });
       if (!this.config.captureErrors) {
         throw err;
       }
     } finally {
-      this.emit("onAfterRun", this);
+      this.emit('onAfterRun', this);
     }
   }
 }

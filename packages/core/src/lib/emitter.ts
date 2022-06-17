@@ -1,4 +1,4 @@
-import { Program } from "../program";
+import { Program } from '../program';
 
 type EventType = string | symbol;
 
@@ -17,7 +17,7 @@ export class Emitter<
 
   on<K extends keyof Events>(
     type: K,
-    listener: K extends "onError"
+    listener: K extends 'onError'
       ? Listener<{ error: any; program?: Program }>
       : TypedListener
   ) {
@@ -44,7 +44,7 @@ export class Emitter<
 
   emit<K extends keyof Events>(
     type: K,
-    data?: K extends "onError" ? { error: any; program?: Program } : Events[K]
+    data?: K extends 'onError' ? { error: any; program?: Program } : Events[K]
   ): void {
     const listeners = this.events.get(type);
 

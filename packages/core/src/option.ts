@@ -1,9 +1,5 @@
-import { camelcaseOptionName, removeBrackets } from "./lib/utils";
-
-export interface OptionConfig {
-  default?: any;
-  type?: any[];
-}
+import { camelcaseOptionName, removeBrackets } from './lib/utils';
+import { OptionConfig } from './types';
 
 export class Option {
   name: string;
@@ -21,16 +17,16 @@ export class Option {
     this.config = Object.assign({}, config);
 
     // You may use cli.option('--env.* [value]', 'desc') to denote a dot-nested option
-    rawName = rawName.replace(/\.\*/g, "");
+    rawName = rawName.replace(/\.\*/g, '');
 
     this.negated = false;
     this.names = removeBrackets(rawName)
-      .split(",")
+      .split(',')
       .map((v: string) => {
-        let name = v.trim().replace(/^-{1,2}/, "");
-        if (name.startsWith("no-")) {
+        let name = v.trim().replace(/^-{1,2}/, '');
+        if (name.startsWith('no-')) {
           this.negated = true;
-          name = name.replace(/^no-/, "");
+          name = name.replace(/^no-/, '');
         }
 
         return camelcaseOptionName(name);
@@ -44,9 +40,9 @@ export class Option {
       this.config.default = true;
     }
 
-    if (rawName.includes("<")) {
+    if (rawName.includes('<')) {
       this.required = true;
-    } else if (rawName.includes("[")) {
+    } else if (rawName.includes('[')) {
       this.required = false;
     } else {
       // No arg needed, it's boolean flag

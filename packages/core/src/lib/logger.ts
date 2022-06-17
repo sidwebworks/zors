@@ -1,5 +1,5 @@
-import colors, { StyleFunction } from "ansi-colors";
-import { ILogger } from "../types";
+import colors, { StyleFunction } from 'ansi-colors';
+import { ILogger } from '../types';
 
 export function Logger(options?: {
   colors: Record<keyof ILogger, StyleFunction>;
@@ -18,19 +18,19 @@ export function Logger(options?: {
 
   return {
     debug(...args: any[]) {
-      console.log(types["debug"].bold(`DEBUG:`), ...args);
+      console.log(types['debug'].bold(`DEBUG:`), ...args);
     },
     warn(...args: any[]) {
-      console.warn(types["warn"].bold(`WARNING:`), ...args);
+      console.warn(types['warn'].bold(`WARNING:`), ...args);
     },
     success(...args: any[]) {
-      console.log(types["success"].bold(`SUCCESS:`), ...args);
+      console.log(types['success'].bold(`SUCCESS:`), ...args);
     },
     error(...args: any[]) {
-      console.log(types["error"].bold(`ERROR:`), ...args);
+      console.log(types['error'].bold(`ERROR:`), ...args);
     },
     info(...args: any[]) {
-      console.info(types["info"].bold(`INFO:`), ...args);
+      console.info(types['info'].bold(`INFO:`), ...args);
     },
     log(...args: any[]) {
       console.log(...args);
@@ -45,7 +45,7 @@ export function Logger(options?: {
 
       const duration = new Date().getTime() - found.getTime();
 
-      console.log(types["time"].bold(`TIME:`), duration);
+      console.log(types['time'].bold(`TIME:`), duration);
     },
   };
 }

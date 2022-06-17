@@ -1,6 +1,5 @@
-import colors from "ansi-colors";
-import { Command } from "../command";
-import { OptionConfig } from "../option";
+import colors from 'ansi-colors';
+import { Command } from '../command';
 
 export interface ILogger {
   debug: (...args: unknown[]) => void;
@@ -25,7 +24,7 @@ export interface ParseOptions {
   /** When `true`, populate the result `_` with everything before the `--` and
    * Defaults to `false`.
    */
-  "--"?: boolean;
+  '--'?: boolean;
 
   /** An object mapping string names to strings or arrays of string argument
    * names to use as aliases. */
@@ -74,6 +73,7 @@ export interface DefineCommandOpts<
   O extends Record<string, string | number>
 > extends CommandConfig {
   description?: string;
+  version?: string;
   options?: { name: string; description: string; config?: OptionConfig }[];
   alias?: string[];
   args?: CommandArg[];
@@ -99,3 +99,21 @@ export type Action<
   A extends unknown[] = [],
   O extends Record<string, string | number> = {}
 > = (this: Command<A, O>, args: A, opts: O, T: Tools) => Promise<void> | void;
+
+export interface OptionConfig {
+  default?: any;
+  type?: any[];
+}
+
+export type ProgramEvents =
+  | 'onBeforeRun'
+  | 'onAfterRun'
+  | 'onError'
+  | 'onExit'
+  | 'onRegister';
+
+export interface ProgramConfig {
+  parser?: ParseOptions;
+  tools?: Tools;
+  captureErrors?: boolean;
+}

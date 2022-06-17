@@ -1,15 +1,16 @@
-import { ZorsError } from "./lib/error";
-import { findAllBrackets, removeBrackets } from "./lib/utils";
-import { Option, OptionConfig } from "./option";
-import { Program } from "./program";
+import { ZorsError } from './lib/error';
+import { findAllBrackets, removeBrackets } from './lib/utils';
+import { Option } from './option';
+import { Program } from './program';
 import {
   Action,
   CommandArg,
   CommandConfig,
   CommandExample,
   DefineCommandOpts,
+  OptionConfig,
   Tools,
-} from "./types";
+} from './types';
 
 export class Command<
   T extends any[] = any[],
@@ -32,7 +33,7 @@ export class Command<
     public config: CommandConfig = {}
   ) {
     this.options = [];
-    this._usage = "";
+    this._usage = '';
     this.args = [];
     this.aliases = [];
     this.examples = [];
@@ -62,14 +63,14 @@ export class Command<
       (this.isRootCommand ? cli.name : this.name).toUpperCase()
     );
 
-    const version = colors.bold(`v${this.versionNumber || "0.0.0"}`);
+    const version = colors.bold(`v${this.versionNumber || '0.0.0'}`);
 
     console.log(`${colors.green(name)}/${colors.blue(version)}`);
   }
 
-  version(version: string, customFlags = "-v, --version") {
+  version(version: string, customFlags = '-v, --version') {
     this.versionNumber = version;
-    this.option(customFlags, "Display version number");
+    this.option(customFlags, 'Display version number');
     return this;
   }
 
@@ -87,7 +88,7 @@ export class Command<
   }
 
   get isDefaultCommand() {
-    return this.name === "" || this.aliases.includes("!");
+    return this.name === '' || this.aliases.includes('!');
   }
 
   get isRootCommand(): boolean {
@@ -104,14 +105,24 @@ export class Command<
   }
 
   hasOption(name: string) {
-    const _name = name.split(".")[0];
+    const _name = name.split('.')[0];
     return this.options.find((opt) => opt.names.includes(_name));
+  }
+
+  checkRequiredArgs() {
+    const minimalCount = this.args.filter((a) => a.required).length;
+
+    if (!this.program) return;
+
+    if (this.program.args.length < minimalCount) {
+      throw new ZorsError(`missing required args for command \`${this.raw}\``);
+    }
   }
 
   register(program: Program) {
     this.program = program;
     this.root = program.root;
-    this.program.emit("onRegister", program);
+    this.program.emit('onRegister', program);
 
     return this;
   }
@@ -119,10 +130,10 @@ export class Command<
 
 export class RootCommand extends Command {
   constructor(program: Program) {
-    super("@@ROOT@@", "@@ROOT@@", "", {});
+    super('@@ROOT@@', '@@ROOT@@', '', {});
     this.program = program;
     this.root = program.root;
-    this.usage("<command> [options]");
+    this.usage('<command> [options]');
   }
 }
 
@@ -133,7 +144,8 @@ export function defineCommand<
   const {
     action,
     examples,
-    description = "",
+    description = '',
+    version = '0.0.0',
     args = [],
     alias = [],
     options = [],
@@ -147,6 +159,8 @@ export function defineCommand<
   const command = new Command<TArgs, TOpts>(name, raw, description, config);
 
   command.args = allArgs;
+
+  command.version(version);
 
   command.options = options.map(
     (o) => new Option(o.name, o.description, o.config)
