@@ -1,73 +1,129 @@
-import { Command } from "./command";
-import fs from "fs-jetpack";
-import parse from "yargs-parser";
-import { isCommand, isCommandPath } from "./types";
-import { EventEmitter } from "events";
+import colors from "ansi-colors";
+import { existsSync } from "fs";
+import { Command, RootCommand } from "./command";
+import { Emitter } from "./lib/emitter";
+import { ZorsError } from "./lib/error";
+import { Logger } from "./lib/logger";
+import { parse } from "./lib/parser";
+import { ParseOptions, Tools } from "./types";
+import { isCommand } from "./types/guards";
 
-interface ProgramOptions {
-  name: string;
-  description: string;
+type ProgramEvents =
+  | "onBeforeRun"
+  | "onAfterRun"
+  | "onError"
+  | "onExit"
+  | "onRegister";
+
+interface ProgramConfig {
+  parser?: ParseOptions;
+  tools?: Tools;
 }
 
-type LifecyleEvents = "beforeExit" | "beforeRun" | "afterRun";
+const defaultConfig = { parser: {}, tools: { logger: Logger(), colors } };
 
-export class Program {
-  private commands: Map<string, Command>;
-  public name: string;
-  public description: string;
-  private stack: Promise<any>[] = [];
-  private emitter = new EventEmitter();
+export class Program extends Emitter<Record<ProgramEvents, Program>> {
+  commands: Command[];
+  tools: Tools;
+  private raw: string[];
+  private args: (string | number)[];
+  private options: Record<string, any>;
+  public root: Command;
+  private importQueue: Promise<{ default: Command<any, any> }>[] = [];
 
-  constructor({ name, description }: ProgramOptions) {
-    this.commands = new Map();
-    this.name = name;
-    this.description = description;
+  /**
+   * @param name Program name to display in help and version
+   */
+  constructor(public name: string = "", public config: ProgramConfig = {}) {
+    super();
+    this.args = [];
+    this.commands = [];
+    this.options = {};
+    this.raw = [];
+    this.config = Object.assign(defaultConfig, config);
+    this.tools = this.config.tools!;
+    this.root = new RootCommand(this);
   }
 
-  async run(input: string | string[]) {
-    if (this.stack.length > 0) {
-      const modules = await Promise.all(this.stack);
-
-      modules.forEach((m) => {
-        const command = m.default;
-        this.commands.set(command.name, command);
-        this.stack.pop();
-      });
-    }
-
-    const {
-      _: [name, ...args],
-      ...options
-    } = parse(input);
-
-    const command = this.commands.get(String(name));
-
-    if (!command) throw new Error(`Unknown command ${name}`);
-
-    this.emitter.emit("beforeRun", this);
-
-    await command.execute({ args, options });
-
-    this.emitter.emit("afterRun", this);
+  usage(text: string) {
+    this.root.usage(text);
+    return this;
   }
 
   addCommand<T extends Command<any, any>>(maybeCommand: T | string) {
     if (isCommand(maybeCommand)) {
-      this.commands.set(maybeCommand.name, maybeCommand);
-      return this;
+      this.commands.push(maybeCommand);
+      maybeCommand.register(this);
     }
 
-    if (isCommandPath(maybeCommand) && fs.exists(maybeCommand)) {
-      this.stack.push(import(maybeCommand));
-      return this;
+    if (typeof maybeCommand === "string") {
+      if (!existsSync(maybeCommand)) {
+        throw new ZorsError(
+          `Failed to auto-import command from ${maybeCommand}`
+        );
+      }
+
+      this.importQueue.push(import(maybeCommand));
     }
 
-    throw new Error(`Cannout resolve command ${maybeCommand}`);
+    return this;
   }
 
-  on(key: LifecyleEvents, listener: (program: Program) => void) {
-    this.emitter.on(key, listener);
+  parse(input: string[]) {
+    const aliases: ParseOptions["alias"] = {};
 
-    return () => this.emitter.off(key, listener);
+    for (let command of this.commands) {
+      aliases[command.name] = command.aliases;
+    }
+
+    const config = Object.assign({}, this.config.parser, {
+      alias: aliases,
+    });
+
+    const { _: args, ...options } = parse(input, config);
+
+    this.args = args;
+    this.options = options;
+
+    return { args, options };
+  }
+
+  async resolveCommandImports() {
+    if (this.importQueue.length > 0) {
+      const modules = await Promise.all(this.importQueue);
+
+      modules.forEach((m) => {
+        const command = m.default;
+        this.commands.push(command);
+        command.register(this);
+        this.importQueue.pop();
+      });
+    }
+  }
+
+  async run(input: string[]) {
+    await this.resolveCommandImports();
+
+    const {
+      args: [name, ...args],
+      options,
+    } = this.parse(input);
+
+    const commandName = String(name);
+
+    const found = this.commands.find((c) => c.match(commandName)) || this.root;
+
+    if (found) {
+      const _args = found.args.reduce<any[]>((acc, curr, index) => {
+        if (curr.variadic) {
+          acc.push(args.slice(index));
+        } else {
+          acc.push(args[index]);
+        }
+        return acc;
+      }, []);
+
+      await found.execute(_args, options, this.tools);
+    }
   }
 }

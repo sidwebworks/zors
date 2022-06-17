@@ -3,30 +3,47 @@ import { fileURLToPath } from "url";
 import { defineCommand } from "./command";
 import { Program } from "./program";
 
-export { defineCommand };
 
-export const command = defineCommand<[filename: string], { lang: string }>({
-  name: "create",
-  description: "Creates something",
-  execute: ({ args, options }) => {
-    console.log(`\nSo you want to create a project by the name ${args[0]}`);
-    console.log(`And the language will be ${options.lang}`);
-  },
+
+const updateCommand = defineCommand<[string, string[]], { name: string }>(
+  "update <name> [...files]",
+  {
+    description: "Updates an existing package",
+    alias: ["u"],
+    action: async ([name, files], options, { logger }) => {
+      logger.info(`UPDATE TYPE: `, name);
+
+      files.forEach((f) => {
+        logger.info(`Updating package:`, f);
+      });
+
+      logger.success("FINISHED UPDATING PACKAGES");
+    },
+  }
+);
+
+const program = new Program("ZORS");
+
+program.on("onRegister", ({ tools, ...prog }) => {
+  tools.logger.info(
+    "REGISTER hook called",
+    prog.commands.map((c) => c.name)
+  );
 });
 
-const program = new Program({ description: "My awesome CLI", name: "hoot" });
-
-program.on("beforeRun", (prog) => {
-  console.log("About to run", prog.name);
-});
-
-program.on("afterRun", (prog) => {
-  console.log("Done running", prog.name);
-});
+// Assigns stuff to the Root command
+program.root
+  .option("--name", "Name of the sub command")
+  .action((args, options, { logger }) => {
+    logger.log(args, options);
+  });
 
 const dirname = fileURLToPath(import.meta.url);
 
 program
-  .addCommand(command)
-  .addCommand(path.join(dirname, "../../commands/hello.js"))
-  .run(process.argv.slice(2));
+  .addCommand(path.join(dirname, "../../demo/create.js"))
+  .addCommand(updateCommand);
+
+program.run(process.argv.slice(2));
+
+export { defineCommand, Program };
