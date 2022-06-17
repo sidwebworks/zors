@@ -1,3 +1,5 @@
+import { Option } from '../option';
+
 export const removeBrackets = (raw: string) => raw.replace(/[<[].+/, '').trim();
 
 export const findAllBrackets = (raw: string) => {
@@ -67,4 +69,4 @@ export const camelcaseOptionName = (name: string) => {
     .join('.');
 };
 
-export const getParserOptions = () => {};
+export const getParserOptions = (options: Option[]) => {};
