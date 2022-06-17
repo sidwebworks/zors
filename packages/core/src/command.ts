@@ -1,34 +1,15 @@
-import colors from "ansi-colors";
 import { ZorsError } from "./lib/error";
 import { findAllBrackets, removeBrackets } from "./lib/utils";
 import { Option, OptionConfig } from "./option";
 import { Program } from "./program";
-import { ILogger, Tools } from "./types";
-
-interface CommandArg {
-  required: boolean;
-  value: string;
-  variadic: boolean;
-}
-
-interface HelpSection {
-  title?: string;
-  body: string;
-}
-
-interface CommandConfig {
-  allowUnknownOptions?: boolean;
-  ignoreOptionDefaultValue?: boolean;
-}
-
-type HelpCallback = (sections: HelpSection[]) => void | HelpSection[];
-
-type CommandExample = ((bin: string) => string) | string;
-
-type Action<
-  A extends unknown[] = [],
-  O extends Record<string, string | number> = {}
-> = (args: A, opts: O, T: Tools) => Promise<void> | void;
+import {
+  Action,
+  CommandArg,
+  CommandConfig,
+  CommandExample,
+  DefineCommandOpts,
+  Tools,
+} from "./types";
 
 export class Command<
   T extends any[] = any[],
@@ -38,8 +19,9 @@ export class Command<
   program?: Program;
   args: CommandArg[];
   options: Option[];
+  versionNumber?: string;
+  examples: CommandExample[];
   private _action?: Action<T, O>;
-  private _examples: CommandExample[];
   private _usage: string;
   protected root?: RootCommand;
 
@@ -53,11 +35,16 @@ export class Command<
     this._usage = "";
     this.args = [];
     this.aliases = [];
-    this._examples = [];
+    this.examples = [];
   }
 
   alias(names: string[]) {
     this.aliases.push(...names);
+  }
+
+  example(example: CommandExample) {
+    this.examples.push(example);
+    return this;
   }
 
   action(act: Action<T, O>) {
@@ -65,12 +52,32 @@ export class Command<
     return this.program!;
   }
 
+  printVersion() {
+    const cli = this.program;
+    if (!cli) return;
+
+    const { colors } = cli.tools;
+
+    const name = colors.bold(
+      (this.isRootCommand ? cli.name : this.name).toUpperCase()
+    );
+
+    const version = colors.bold(`v${this.versionNumber || "0.0.0"}`);
+
+    console.log(`${colors.green(name)}/${colors.blue(version)}`);
+  }
+
+  version(version: string, customFlags = "-v, --version") {
+    this.versionNumber = version;
+    this.option(customFlags, "Display version number");
+    return this;
+  }
+
   execute(args: T, options: O, tools: Tools) {
     if (!this._action) {
       throw new ZorsError(`Command ${this.name} is not implemented.`);
     }
-
-    return this._action(args, options, tools);
+    return this._action.call(this, args, options, tools);
   }
 
   option(rawName: string, description: string, config?: OptionConfig) {
@@ -119,18 +126,6 @@ export class RootCommand extends Command {
   }
 }
 
-interface DefineCommandOpts<
-  T extends any[],
-  O extends Record<string, string | number>
-> extends CommandConfig {
-  description?: string;
-  options?: { name: string; description: string; config?: OptionConfig }[];
-  alias?: string[];
-  args?: CommandArg[];
-  action?: Action<T, O>;
-  examples?: CommandExample[];
-}
-
 export function defineCommand<
   TArgs extends any[] = any[],
   TOpts extends Record<string, any> = {}
@@ -150,8 +145,6 @@ export function defineCommand<
   const allArgs = [...new Set(findAllBrackets(raw).concat(args))];
 
   const command = new Command<TArgs, TOpts>(name, raw, description, config);
-
-  command.alias(alias);
 
   command.args = allArgs;
 

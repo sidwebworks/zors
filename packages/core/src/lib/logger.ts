@@ -9,7 +9,6 @@ export function Logger(options?: {
     debug: colors.gray,
     info: colors.cyan,
     success: colors.green,
-    log: colors.white,
     warn: colors.yellow,
     time: colors.magenta,
     ...(options?.colors && options.colors),
@@ -28,13 +27,13 @@ export function Logger(options?: {
       console.log(types["success"].bold(`SUCCESS:`), ...args);
     },
     error(...args: any[]) {
-      console.log(types["success"].bold(`ERROR:`), ...args);
+      console.log(types["error"].bold(`ERROR:`), ...args);
     },
     info(...args: any[]) {
       console.info(types["info"].bold(`INFO:`), ...args);
     },
     log(...args: any[]) {
-      console.log(types["log"].bold(`LOG:`), ...args);
+      console.log(...args);
     },
     start(name: string) {
       timeMap.set(name, new Date());
@@ -46,7 +45,7 @@ export function Logger(options?: {
 
       const duration = new Date().getTime() - found.getTime();
 
-      console.log(types["log"].bold(`TIME:`), duration);
+      console.log(types["time"].bold(`TIME:`), duration);
     },
   };
 }

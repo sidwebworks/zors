@@ -5,7 +5,8 @@ import { Emitter } from "./lib/emitter";
 import { ZorsError } from "./lib/error";
 import { Logger } from "./lib/logger";
 import { parse } from "./lib/parser";
-import { ParseOptions, Tools } from "./types";
+import { findAllBrackets, removeBrackets } from "./lib/utils";
+import { CommandConfig, ParseOptions, Tools } from "./types";
 import { isCommand } from "./types/guards";
 
 type ProgramEvents =
@@ -18,17 +19,22 @@ type ProgramEvents =
 interface ProgramConfig {
   parser?: ParseOptions;
   tools?: Tools;
+  captureErrors?: boolean;
 }
 
-const defaultConfig = { parser: {}, tools: { logger: Logger(), colors } };
+const defaultConfig: ProgramConfig = {
+  parser: {},
+  tools: { logger: Logger(), colors },
+  captureErrors: true,
+};
 
 export class Program extends Emitter<Record<ProgramEvents, Program>> {
   commands: Command[];
   tools: Tools;
-  private raw: string[];
-  private args: (string | number)[];
-  private options: Record<string, any>;
-  public root: Command;
+  raw: string[];
+  args: (string | number)[];
+  options: Record<string, any>;
+  root: Command;
   private importQueue: Promise<{ default: Command<any, any> }>[] = [];
 
   /**
@@ -37,9 +43,9 @@ export class Program extends Emitter<Record<ProgramEvents, Program>> {
   constructor(public name: string = "", public config: ProgramConfig = {}) {
     super();
     this.args = [];
+    this.raw = [];
     this.commands = [];
     this.options = {};
-    this.raw = [];
     this.config = Object.assign(defaultConfig, config);
     this.tools = this.config.tools!;
     this.root = new RootCommand(this);
@@ -50,6 +56,14 @@ export class Program extends Emitter<Record<ProgramEvents, Program>> {
     return this;
   }
 
+  command(raw: string, description: string, config?: CommandConfig) {
+    const command = new Command(removeBrackets(raw), raw, description, config);
+    command.args = findAllBrackets(raw);
+    this.commands.push(command);
+    command.register(this);
+    return command;
+  }
+
   addCommand<T extends Command<any, any>>(maybeCommand: T | string) {
     if (isCommand(maybeCommand)) {
       this.commands.push(maybeCommand);
@@ -57,12 +71,6 @@ export class Program extends Emitter<Record<ProgramEvents, Program>> {
     }
 
     if (typeof maybeCommand === "string") {
-      if (!existsSync(maybeCommand)) {
-        throw new ZorsError(
-          `Failed to auto-import command from ${maybeCommand}`
-        );
-      }
-
       this.importQueue.push(import(maybeCommand));
     }
 
@@ -70,7 +78,9 @@ export class Program extends Emitter<Record<ProgramEvents, Program>> {
   }
 
   parse(input: string[]) {
-    const aliases: ParseOptions["alias"] = {};
+    const aliases: ParseOptions["alias"] = {
+      version: ["v"],
+    };
 
     for (let command of this.commands) {
       aliases[command.name] = command.aliases;
@@ -84,13 +94,16 @@ export class Program extends Emitter<Record<ProgramEvents, Program>> {
 
     this.args = args;
     this.options = options;
+    this.raw = input;
 
     return { args, options };
   }
 
   async resolveCommandImports() {
     if (this.importQueue.length > 0) {
-      const modules = await Promise.all(this.importQueue);
+      const modules = await Promise.all(this.importQueue).catch((err) => {
+        throw new ZorsError(`Failed to auto-import commands from ${err.url}`);
+      });
 
       modules.forEach((m) => {
         const command = m.default;
@@ -102,28 +115,43 @@ export class Program extends Emitter<Record<ProgramEvents, Program>> {
   }
 
   async run(input: string[]) {
-    await this.resolveCommandImports();
+    try {
+      this.emit("onBeforeRun", this);
 
-    const {
-      args: [name, ...args],
-      options,
-    } = this.parse(input);
+      await this.resolveCommandImports();
 
-    const commandName = String(name);
+      const {
+        args: [name, ...args],
+        options,
+      } = this.parse(input);
 
-    const found = this.commands.find((c) => c.match(commandName)) || this.root;
+      const _name = String(name);
 
-    if (found) {
-      const _args = found.args.reduce<any[]>((acc, curr, index) => {
-        if (curr.variadic) {
-          acc.push(args.slice(index));
-        } else {
-          acc.push(args[index]);
+      const command = this.commands.find((c) => c.match(_name)) || this.root;
+
+      if (command) {
+        if (command.hasOption("version")) {
+          return command.printVersion();
         }
-        return acc;
-      }, []);
 
-      await found.execute(_args, options, this.tools);
+        const _args = command.args.reduce<any[]>((acc, curr, index) => {
+          if (curr.variadic) {
+            acc.push(args.slice(index));
+          } else {
+            acc.push(args[index]);
+          }
+          return acc;
+        }, []);
+
+        await command.execute(_args, options, this.tools);
+      }
+    } catch (err: any) {
+      this.emit("onError", { error: err, program: this });
+      if (!this.config.captureErrors) {
+        throw err;
+      }
+    } finally {
+      this.emit("onAfterRun", this);
     }
   }
 }

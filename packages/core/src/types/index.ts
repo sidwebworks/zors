@@ -1,4 +1,6 @@
 import colors from "ansi-colors";
+import { Command } from "../command";
+import { OptionConfig } from "../option";
 
 export interface ILogger {
   debug: (...args: unknown[]) => void;
@@ -61,3 +63,39 @@ export interface ParseOptions {
 }
 
 export type Tools = { logger: ILogger; colors: typeof colors };
+
+export interface CommandConfig {
+  allowUnknownOptions?: boolean;
+  ignoreOptionDefaultValue?: boolean;
+}
+
+export interface DefineCommandOpts<
+  T extends any[],
+  O extends Record<string, string | number>
+> extends CommandConfig {
+  description?: string;
+  options?: { name: string; description: string; config?: OptionConfig }[];
+  alias?: string[];
+  args?: CommandArg[];
+  action?: Action<T, O>;
+  examples?: CommandExample[];
+}
+
+export type HelpCallback = (sections: HelpSection[]) => void | HelpSection[];
+
+export type CommandExample = ((bin: string) => string) | string;
+export interface CommandArg {
+  required: boolean;
+  value: string;
+  variadic: boolean;
+}
+
+export interface HelpSection {
+  title?: string;
+  body: string;
+}
+
+export type Action<
+  A extends unknown[] = [],
+  O extends Record<string, string | number> = {}
+> = (this: Command<A, O>, args: A, opts: O, T: Tools) => Promise<void> | void;

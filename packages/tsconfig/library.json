@@ -3,7 +3,7 @@
   "display": "Library",
   "extends": "./base.json",
   "compilerOptions": {
-    "lib": ["ES2020"],
+    "lib": ["ES2020", "ES2017.Object"],
     "module": "ESNext",
     "target": "ES2020"
   }

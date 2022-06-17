@@ -1,3 +1,5 @@
+import { Program } from "../program";
+
 type EventType = string | symbol;
 
 type EventsMap<E extends Record<EventType, unknown>, D = E[keyof E]> = Map<
@@ -13,7 +15,12 @@ export class Emitter<
 > {
   events: EventsMap<Events> = new Map();
 
-  on<K extends keyof Events>(type: K, listener: TypedListener) {
+  on<K extends keyof Events>(
+    type: K,
+    listener: K extends "onError"
+      ? Listener<{ error: any; program?: Program }>
+      : TypedListener
+  ) {
     const listeners = this.events.get(type);
 
     if (listeners) {
@@ -35,7 +42,10 @@ export class Emitter<
     }
   }
 
-  emit<K extends keyof Events>(type: K, data?: Events[K]): void {
+  emit<K extends keyof Events>(
+    type: K,
+    data?: K extends "onError" ? { error: any; program?: Program } : Events[K]
+  ): void {
     const listeners = this.events.get(type);
 
     if (listeners) {
