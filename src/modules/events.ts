@@ -1,4 +1,4 @@
-import { Program } from "../Program";
+import { Program } from "./program";
 import { EventsMap, Listener, ProgramEvents } from "../types";
 
 export class EventsManager<

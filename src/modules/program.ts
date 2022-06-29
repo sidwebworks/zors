@@ -1,8 +1,8 @@
 import picocolors from "picocolors";
-import { CommandManager } from "./managers/Command";
-import { EventsManager } from "./managers/Events";
-import { PluginsManager } from "./managers/Plugin";
-import { AllTools, IProgramConfig, VersionNumber } from "./types";
+import { EventsManager } from "./events";
+import { PluginsManager } from "./plugins";
+import { AllTools, IProgramConfig, VersionNumber } from "../types";
+import { Command, CommandManager } from "./command";
 
 export class Program {
   private commands: CommandManager;
@@ -16,14 +16,15 @@ export class Program {
     public config?: IProgramConfig
   ) {
     this.tools = Object.assign(this.tools, config?.tools);
-    this.commands = new CommandManager(this).version(version);
+    this.commands = new CommandManager(this);
+    this.commands.global.version(version);
     this.plugins = new PluginsManager(this).register(config?.plugins || []);
     this.events = new EventsManager<Program>();
     this.plugins.attach();
   }
 
   version(value: VersionNumber) {
-    this.commands.version(value);
+    this.commands.global.version(value);
     return this;
   }
 
@@ -62,6 +63,10 @@ export class Program {
     const name = String(first);
 
     const found = this.commands.find(name);
+
+    if (!found) {
+      return this.commands.global.printHelp();
+    }
 
     if (options["v"]) {
       found.printVersion();

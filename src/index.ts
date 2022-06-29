@@ -1,4 +1,3 @@
-import { Program } from "./Program";
 import type {
   IProgramConfig,
   Tools,
@@ -6,16 +5,11 @@ import type {
   Commands,
   IPlugin,
 } from "./types";
-import { defineCommand, Command } from "./managers/Command";
 
-function zors(
-  name: string,
-  version?: VersionNumber,
-  config?: Omit<IProgramConfig, "tools"> & { tools?: Record<string, any> }
-): Program {
-  return new Program(name, version, config);
-}
+import { Command } from "./modules/command";
+import { Program } from "./modules/program";
+import { zors, defineCommand } from "./functions";
 
-export { zors, defineCommand, Command, Program };
+export { Command, Program, zors, defineCommand };
 
 export type { Tools, Commands, VersionNumber, IProgramConfig, IPlugin };

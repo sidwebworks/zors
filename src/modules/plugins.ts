@@ -1,5 +1,5 @@
-import { Program } from "../Program";
-import { AllTools, IBuildProgram, IPlugin } from "../types";
+import { IBuildProgram, IPlugin } from "../types";
+import { Program } from "./program";
 
 export class PluginsManager {
   private program: Program;

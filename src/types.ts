@@ -1,6 +1,6 @@
-import { Command } from "./managers/Command";
 import picocolors from "picocolors";
-import { Program } from "./Program";
+import { Command } from "./modules/command";
+import { Program } from "./modules/program";
 
 export interface ParserFlags {
   bools: Record<string, boolean>;

@@ -2,7 +2,7 @@ import { defineCommand } from "zors";
 
 export const createCommand = defineCommand<[name: string]>("create <name>", {
   description: "Creates a new project",
-  aliases: ["c"],
+  aliases: ["c", "!"],
   action([name], opts, tools) {
     const { logger, colors, hello } = tools;
     logger(`Hello ${colors.green(hello)}`, name);
