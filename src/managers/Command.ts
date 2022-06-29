@@ -1,3 +1,4 @@
+import { ZorsError } from "../lib/error";
 import { parse } from "../lib/parser";
 import {
   camelcaseOptionName,
@@ -24,12 +25,13 @@ import {
  */
 export class Command<T extends RawArgs, O extends IOptions> {
   private root?: CommandManager;
-  private _action: Action<T, O> = noop;
+  private _action?: Action<T, O>;
   private _version: VersionNumber = "0.0.0";
   private _usage: string = "";
   private examples: CommandExample[] = [];
+  raw: string = "";
   aliases: string[] = [];
-  args: IParsedArg[];
+  args: IParsedArg[] = [];
   options: Option[] = [];
   config?: ICommandConfig;
 
@@ -38,8 +40,6 @@ export class Command<T extends RawArgs, O extends IOptions> {
     public description: string,
     config?: ICommandConfig
   ) {
-    this.args = [];
-
     this.config = Object.assign(
       {
         allowUnknownOptions: false,
@@ -93,7 +93,42 @@ export class Command<T extends RawArgs, O extends IOptions> {
   }
 
   execute(args: T, options: O, tools: AllTools) {
+    if (!this._action) {
+      throw new ZorsError(`Command ${this.name} is not implemented.`);
+    }
+
+    this.validate(args, options);
+
     return this._action(args, options, tools);
+  }
+
+  hasOption(name: string) {
+    const _name = name.split(".")[0];
+    return this.options.find((opt) => opt.aliases.includes(_name));
+  }
+
+  validate(args: RawArgs, options: IOptions) {
+    const required = this.args.filter((a) => a.required);
+
+    if (!this.root) return;
+
+    if (args.length < required.length) {
+      throw new ZorsError(`Missing required arg for command \`${this.raw}\``);
+    }
+
+    if (!this.config?.allowUnknownOptions) {
+      for (const name of Object.keys(options)) {
+        if (
+          name !== "--" &&
+          !this.hasOption(name) &&
+          !this.root.hasOption(name)
+        ) {
+          throw new ZorsError(
+            `Unknown option \`${name.length > 1 ? `--${name}` : `-${name}`}\``
+          );
+        }
+      }
+    }
   }
 
   action(func: Action<T, O>): Program {
@@ -137,6 +172,7 @@ export class CommandManager extends Command<RawArgs, IOptions> {
 
   parse = (input: string[]) => {
     const { _: args, ...options } = parse(input, this.getParserOptions());
+
     return { args, options };
   };
 
@@ -197,6 +233,8 @@ export class CommandManager extends Command<RawArgs, IOptions> {
     const command = new Command<A, O>(removeBrackets(raw), description, config);
 
     command.args = findAllBrackets(raw);
+
+    command.raw = raw;
 
     this.register(command);
 
@@ -285,6 +323,8 @@ export function defineCommand<
     opts.config
   );
 
+  command.raw = raw;
+
   command.args = findAllBrackets(raw);
 
   command.aliases = opts.aliases || [];
@@ -292,6 +332,8 @@ export function defineCommand<
   opts.options?.forEach((el) =>
     command.option(el.raw, el.description, el.opts)
   );
+
+  opts.examples?.forEach((el) => command.example(el));
 
   command.action(opts.action);
 
