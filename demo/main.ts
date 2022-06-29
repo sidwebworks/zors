@@ -1,46 +1,52 @@
 import { zors } from "zors";
-import { createCommand, updateCommand } from "./commands.js";
-import { utilsPlugin } from "./plugins.js";
+import { utilsPlugin } from "./plugin.js";
+import { commitCommand } from "./commands.js";
 
 declare module "zors" {
   interface Commands {
-    create: "create";
-    update: "update";
+    init: "init";
+    add: "add";
+    commit: "commit";
   }
 }
 
-const program = zors("quick-strapper", "1.0.0", {
+const program = zors("git", "1.0.0", {
   plugins: [utilsPlugin],
   formatters: {
-    version(number, name) {
-      const colors = this.tools.colors;
+    version(version, name) {
+      const { colors } = this.tools;
       return colors.bold(
-        `${colors.cyanBright(name)}/${colors.greenBright(number)}`
+        `Yeh hai version: ${colors.cyan(name)}/v${colors.green(version)}`
       );
+    },
+    help(sections) {
+      return sections;
     },
   },
 });
 
-program.on("register", () => {
-  console.log("Command registered");
+program.on("run:init", () => {
+  console.log("Init command was called!!!!");
 });
 
-program.on("beforeRun", () => {
-  console.log("About to run\n");
-});
-
-program.on("run:create", () => {
-  console.log("Running create command");
-});
-
-program.on("run:update", () => {
-  console.log("Running update command");
-});
-
-program.on("run:*", () => {
-  console.log("Unknown command!!!!");
-});
-
-program.register(createCommand).register(updateCommand);
+program
+  .command("init", "Initializes a empty git repository")
+  .version("1.4.5")
+  .usage("git init")
+  .example("git init")
+  .action((args, options, { colors }) => {
+    console.log(colors.greenBright("Initialized an empty git repository"));
+  })
+  .command<string[]>("add <...files>", "Stages the given list of files")
+  .action((files, options, { colors }) => {
+    if (files.length === 1 && files[0] === ".") {
+      console.log(colors.cyanBright("Staging all the un-tracked files"));
+    } else {
+      console.log(colors.yellowBright("Staging files: "), files);
+    }
+  })
+  .register(commitCommand);
 
 program.run(process.argv.slice(2));
+
+
