@@ -1,5 +1,6 @@
 import { Command } from "./managers/Command";
 import picocolors from "picocolors";
+import { Program } from "./Program";
 
 export interface ParserFlags {
   bools: Record<string, boolean>;
@@ -11,6 +12,12 @@ export interface ParserFlags {
 }
 
 export interface Tools {}
+
+export interface DefaultTools {
+  colors: typeof picocolors;
+}
+
+export type AllTools = Omit<DefaultTools, keyof Tools> & Tools;
 
 export interface ParserResult {
   _: Array<string | number>;
@@ -41,9 +48,10 @@ export interface NestedMapping {
   [key: string]: NestedMapping | unknown;
 }
 
-export interface IProgramConfig<T extends Tools = Tools> {
+export interface IProgramConfig {
   parser?: ParserOptions;
-  tools?: T;
+  plugins?: IPlugin[];
+  tools?: Tools;
 }
 
 export type RawArgs = (string | number | string[] | number[])[];
@@ -52,12 +60,12 @@ export type IOptions = Record<string, string | number>;
 
 export interface Commands {}
 
-export type ProgramEvents<P extends keyof Commands = keyof Commands> =
+export type ProgramEvents =
   | "register"
   | "error"
   | "beforeExit"
   | "beforeRun"
-  | `run:${Commands[P]}`
+  | `run:${keyof Commands}`
   | `run:*`;
 
 export interface IParsedArg {
@@ -73,26 +81,20 @@ export interface ICommandConfig {
 
 export type VersionNumber = `${number}.${number}.${number}`;
 
-export type DefaultTools = {
-  colors: typeof picocolors;
-};
-
-export type Action<
-  A extends RawArgs,
-  O extends IOptions = IOptions,
-  T extends Tools = Tools
-> = (
-  this: Command<A, O, T>,
+export type Action<A extends RawArgs, O extends IOptions = IOptions> = (
+  this: Command<A, O>,
   args: A,
   opts: O,
-  tools: Omit<DefaultTools, keyof T> & T
+  tools: AllTools
 ) => Promise<void> | void;
 
 export interface DefineCommandOptions<A extends RawArgs, O extends IOptions> {
-  action: Action<A, O, Tools>;
+  action: Action<A, O>;
   description: string;
+  usage?: string;
   aliases?: string[];
   version?: VersionNumber;
+  examples?: CommandExample[];
   options?: {
     raw: string;
     description: string;
@@ -100,3 +102,37 @@ export interface DefineCommandOptions<A extends RawArgs, O extends IOptions> {
   }[];
   config?: ICommandConfig;
 }
+
+export type EventType = string | symbol;
+
+export type EventsMap<
+  E extends Record<EventType, unknown>,
+  D = E[keyof E]
+> = Map<keyof E, Listener<D>[]>;
+
+export type Listener<D = unknown> = (data: D) => void;
+
+export type RemoveNullables<T extends unknown, K extends keyof T = keyof T> = {
+  [P in NonNullable<K>]: NonNullable<T[P]>;
+};
+
+export type IBuildProgram = Omit<
+  RemoveNullables<NonNullable<Program>>,
+  "run"
+> & {
+  config: { tools: Record<string, any> };
+};
+
+export interface IPlugin {
+  name: string;
+  build: (program: IBuildProgram) => IBuildProgram;
+}
+
+export interface HelpSection {
+  title?: string;
+  body: string;
+}
+
+export type HelpCallback = (sections: HelpSection[]) => void | HelpSection[];
+
+export type CommandExample = ((bin: string) => string) | string;

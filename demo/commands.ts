@@ -4,8 +4,8 @@ export const createCommand = defineCommand<[name: string]>("create <name>", {
   description: "Creates a new project",
   aliases: ["c"],
   action([name], opts, tools) {
-    const { logger, colors } = tools;
-    logger(colors.green(name), opts);
+    const { logger, colors, hello } = tools;
+    logger(`Hello ${colors.green(hello)}`);
   },
 });
 

@@ -1,20 +1,16 @@
-import { zors } from "zors";
+import { IPlugin, zors } from "zors";
 import { createCommand, updateCommand } from "./commands.js";
-import { customLogger } from "./logger.js";
+import { utilsPlugin } from "./plugins.js";
 
 declare module "zors" {
   interface Commands {
-    CreateCommand: "create";
-    UpdateCommand: "update";
-  }
-
-  interface Tools {
-    logger: typeof customLogger;
+    create: "create";
+    update: "update";
   }
 }
 
 const program = zors("quick-strapper", "1.0.0", {
-  tools: { logger: customLogger },
+  plugins: [utilsPlugin],
 });
 
 program.on("register", () => {

@@ -1,7 +1,4 @@
 import { parse } from "../lib/parser";
-
-import picocolors from "picocolors";
-
 import {
   camelcaseOptionName,
   findAllBrackets,
@@ -11,25 +8,26 @@ import {
 import { Program } from "../Program";
 import {
   Action,
-  DefaultTools,
+  AllTools,
+  CommandExample,
   DefineCommandOptions,
   ICommandConfig,
   IOptions,
   IParsedArg,
   ParserOptions,
   RawArgs,
-  Tools,
   VersionNumber,
 } from "../types";
 
 /**
- ** Creates new instances of the command object
+ * Creates a new instances of the command object
  */
-export class Command<T extends RawArgs, O extends IOptions, K extends Tools> {
-  private root?: CommandManager<K>;
-  private _action: Action<T, O, K> = noop;
+export class Command<T extends RawArgs, O extends IOptions> {
+  private root?: CommandManager;
+  private _action: Action<T, O> = noop;
   private _version: VersionNumber = "0.0.0";
-  isGlobal: boolean = false;
+  private _usage: string = "";
+  private examples: CommandExample[] = [];
   aliases: string[] = [];
   args: IParsedArg[];
   options: Option[] = [];
@@ -42,10 +40,6 @@ export class Command<T extends RawArgs, O extends IOptions, K extends Tools> {
   ) {
     this.args = [];
 
-    if (name === "@@Global@@") {
-      this.isGlobal = true;
-    }
-
     this.config = Object.assign(
       {
         allowUnknownOptions: false,
@@ -55,9 +49,27 @@ export class Command<T extends RawArgs, O extends IOptions, K extends Tools> {
     );
   }
 
+  get isDefault() {
+    return this.name === "" || this.aliases.includes("!");
+  }
+
+  get isGlobal(): boolean {
+    return this.name === "@@Global@@";
+  }
+
   version(value: VersionNumber, flags = "-v, --version") {
     this._version = value;
     this.option(flags, "Display version number");
+    return this;
+  }
+
+  example(example: CommandExample) {
+    this.examples.push(example);
+    return this;
+  }
+
+  usage(text: string) {
+    this._usage = text.trim();
     return this;
   }
 
@@ -76,21 +88,22 @@ export class Command<T extends RawArgs, O extends IOptions, K extends Tools> {
     return this;
   }
 
-  link(manager: CommandManager<K>) {
+  link(manager: CommandManager) {
     this.root = manager;
   }
 
-  execute(args: T, options: O) {
-    return this._action(args, options, this.root?.tools!);
+  execute(args: T, options: O, tools: AllTools) {
+    return this._action(args, options, tools);
   }
 
-  action(func: Action<T, O, K>) {
+  action(func: Action<T, O>): Program {
     this._action = func;
-    return this.root!.program;
+    return this.root?.program as Program;
   }
 
   printVersion() {
     if (!this.root) return;
+
     const { colors } = this.root.tools;
 
     const name = (
@@ -110,28 +123,24 @@ export class Command<T extends RawArgs, O extends IOptions, K extends Tools> {
 }
 
 /**
- ** Creates new instances of the command manager
+ * Creates a new instance of the command manager
  */
-export class CommandManager<T extends Tools> extends Command<
-  RawArgs,
-  IOptions,
-  T
-> {
-  private commands: Map<string, Command<RawArgs, IOptions, T>> = new Map();
-  tools: T & DefaultTools;
+export class CommandManager extends Command<RawArgs, IOptions> {
+  private commands: Map<string, Command<RawArgs, IOptions>> = new Map();
+  tools: AllTools;
 
-  constructor(public program: Program<T>, tools: T) {
+  constructor(public program: Program) {
     super("@@Global@@", "");
     this.link(this);
-    this.tools = Object.assign({ colors: picocolors }, tools);
+    this.tools = program.tools;
   }
 
-  parse(input: string[]) {
+  parse = (input: string[]) => {
     const { _: args, ...options } = parse(input, this.getParserOptions());
     return { args, options };
-  }
+  };
 
-  private getParserOptions(command?: Command<RawArgs, IOptions, T>) {
+  private getParserOptions(command?: Command<RawArgs, IOptions>) {
     const config: ParserOptions = {
       alias: {
         version: ["v"],
@@ -172,33 +181,29 @@ export class CommandManager<T extends Tools> extends Command<
     return Object.assign({}, this.program.config?.parser, config);
   }
 
-  register(command: Command<any, any, T>) {
+  register = (command: Command<any, any>) => {
     command.link(this);
     this.commands.set(command.name, command);
     this.program.emit("register");
 
     return this.program;
-  }
+  };
 
-  add<A extends RawArgs = RawArgs, O extends IOptions = IOptions>(
+  add = <A extends RawArgs = RawArgs, O extends IOptions = IOptions>(
     raw: string,
     description: string,
     config?: ICommandConfig
-  ) {
-    const command = new Command<A, O, T>(
-      removeBrackets(raw),
-      description,
-      config
-    );
+  ) => {
+    const command = new Command<A, O>(removeBrackets(raw), description, config);
 
     command.args = findAllBrackets(raw);
 
     this.register(command);
 
     return command;
-  }
+  };
 
-  find(query: string): CommandManager<T> | Command<RawArgs, IOptions, T> {
+  find = (query: string): CommandManager | Command<RawArgs, IOptions> => {
     for (let [name, command] of this.commands.entries()) {
       if (name === query) {
         return command;
@@ -210,9 +215,12 @@ export class CommandManager<T extends Tools> extends Command<
     }
 
     return this;
-  }
+  };
 }
 
+/**
+ * Creates a new instance of option object
+ */
 export class Option {
   name: string;
   aliases: string[] = [];
@@ -264,11 +272,14 @@ export class Option {
   }
 }
 
+/**
+ * A fascade function to create a new instance of Command
+ */
 export function defineCommand<
   A extends RawArgs = RawArgs,
   O extends IOptions = IOptions
 >(raw: string, opts: DefineCommandOptions<A, O>) {
-  const command = new Command<A, O, Tools>(
+  const command = new Command<A, O>(
     removeBrackets(raw),
     opts.description,
     opts.config
@@ -281,6 +292,8 @@ export function defineCommand<
   opts.options?.forEach((el) =>
     command.option(el.raw, el.description, el.opts)
   );
+
+  command.action(opts.action);
 
   return command;
 }

@@ -1,32 +1,54 @@
+import picocolors from "picocolors";
 import { CommandManager } from "./managers/Command";
 import { EventsManager } from "./managers/Events";
-import { IProgramConfig, Tools, VersionNumber } from "./types";
+import { PluginsManager } from "./managers/Plugin";
+import { AllTools, IProgramConfig, VersionNumber } from "./types";
 
-export class Program<T extends Tools = Tools> extends EventsManager<Program> {
-  private commander: CommandManager<T>;
+export class Program {
+  private commands: CommandManager;
+  private plugins: PluginsManager;
+  private events: EventsManager<Program>;
+  public tools: AllTools = { colors: picocolors };
 
   constructor(
     public name: string,
     version: VersionNumber = "0.0.0",
-    public config?: IProgramConfig<T>
+    public config?: IProgramConfig
   ) {
-    super();
-    const tools = Object.assign({}, config?.tools);
-    this.commander = new CommandManager<T>(this, tools);
-    this.commander.version(version);
+    this.tools = Object.assign(this.tools, config?.tools);
+    this.commands = new CommandManager(this).version(version);
+    this.plugins = new PluginsManager(this).register(config?.plugins || []);
+    this.events = new EventsManager<Program>();
+    this.plugins.attach();
   }
 
   version(value: VersionNumber) {
-    this.commander.version(value);
+    this.commands.version(value);
     return this;
   }
 
+  get emit() {
+    return this.events.emit;
+  }
+
+  get on() {
+    return this.events.on;
+  }
+
+  get off() {
+    return this.events.off;
+  }
+
   get command() {
-    return this.commander.add.bind(this.commander);
+    return this.commands.add;
   }
 
   get register() {
-    return this.commander.register.bind(this.commander);
+    return this.commands.register;
+  }
+
+  get parse() {
+    return this.commands.parse;
   }
 
   async run(argv: (string | string)[]) {
@@ -35,11 +57,11 @@ export class Program<T extends Tools = Tools> extends EventsManager<Program> {
     const {
       args: [first, ...args],
       options,
-    } = this.commander.parse(argv);
+    } = this.commands.parse(argv);
 
     const name = String(first);
 
-    const found = this.commander.find(name);
+    const found = this.commands.find(name);
 
     if (options["v"]) {
       found.printVersion();
@@ -49,7 +71,7 @@ export class Program<T extends Tools = Tools> extends EventsManager<Program> {
     this.emit(`run:${found.name}`);
     this.emit(`run:*`);
 
-    await found.execute(args, options);
+    await found.execute(args, options, this.tools);
 
     this.emit("beforeExit");
   }
