@@ -1,4 +1,3 @@
-import picocolors from "picocolors";
 import { Command } from "./modules/command";
 import { Program } from "./modules/program";
 
@@ -13,9 +12,7 @@ export interface ParserFlags {
 
 export interface Tools {}
 
-export interface DefaultTools {
-  colors: typeof picocolors;
-}
+export interface DefaultTools {}
 
 export type AllTools = Omit<DefaultTools, keyof Tools> & Tools;
 
@@ -52,19 +49,30 @@ export interface IProgramConfig {
   parser?: ParserOptions;
   plugins?: IPlugin[];
   tools?: Tools;
+  formatters?: {
+    version?: (
+      this: Required<IProgramConfig>,
+      version: VersionNumber,
+      name: string
+    ) => string;
+    help?: (
+      this: Required<IProgramConfig>,
+      sections: HelpSection[]
+    ) => HelpSection[];
+  };
 }
 
 export type RawArgs = (string | number | string[] | number[])[];
 
-export type IOptions = Record<string, string | number>;
+export type IOptions = Record<string, string | number | boolean>;
 
 export interface Commands {}
 
 export type ProgramEvents =
   | "register"
   | "error"
-  | "beforeExit"
   | "beforeRun"
+  | "afterRun"
   | `run:${keyof Commands}`
   | `run:*`;
 
@@ -98,7 +106,8 @@ export interface DefineCommandOptions<A extends RawArgs, O extends IOptions> {
   options?: {
     raw: string;
     description: string;
-    opts?: { default?: any; type?: any[] };
+    default?: any;
+    type?: any[];
   }[];
   config?: ICommandConfig;
 }
@@ -112,14 +121,7 @@ export type EventsMap<
 
 export type Listener<D = unknown> = (data: D) => void;
 
-export type RemoveNullables<T extends unknown, K extends keyof T = keyof T> = {
-  [P in NonNullable<K>]: NonNullable<T[P]>;
-};
-
-export type IBuildProgram = Omit<
-  RemoveNullables<NonNullable<Program>>,
-  "run"
-> & {
+export type IBuildProgram = Omit<Required<Program>, "run"> & {
   config: { tools: Record<string, any> };
 };
 
@@ -132,7 +134,5 @@ export interface HelpSection {
   title?: string;
   body: string;
 }
-
-export type HelpCallback = (sections: HelpSection[]) => void | HelpSection[];
 
 export type CommandExample = ((bin: string) => string) | string;

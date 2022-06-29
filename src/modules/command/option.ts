@@ -38,7 +38,7 @@ export class Option {
       })
       .sort((a, b) => (a.length > b.length ? 1 : -1));
 
-    this.name = this.aliases[this.aliases.length - 1];
+    this.name = this.aliases.slice(-1)[0];
 
     if (this.isNegated && this.default == null) {
       this.default = true;

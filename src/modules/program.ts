@@ -1,14 +1,13 @@
-import picocolors from "picocolors";
+import { AllTools, IProgramConfig, VersionNumber } from "../types";
+import { CommandManager } from "./command";
 import { EventsManager } from "./events";
 import { PluginsManager } from "./plugins";
-import { AllTools, IProgramConfig, VersionNumber } from "../types";
-import { Command, CommandManager } from "./command";
 
 export class Program {
   private commands: CommandManager;
   private plugins: PluginsManager;
   private events: EventsManager<Program>;
-  public tools: AllTools = { colors: picocolors };
+  public tools: AllTools = {};
 
   constructor(
     public name: string,
@@ -62,22 +61,37 @@ export class Program {
 
     const name = String(first);
 
-    const found = this.commands.find(name);
+    let found = this.commands.find(name);
 
-    if (!found) {
-      return this.commands.global.printHelp();
+    const none = !first && args.length === 0;
+
+    if (!found && this.commands.global.isImplemented) {
+      found = this.commands.global;
     }
 
-    if (options["v"]) {
-      found.printVersion();
+    if (found && options["v"]) {
+      found.getVersion();
+    } else if (options["v"]) {
+      this.commands.global.getVersion();
+    }
+
+    if (options["h"] || none) {
+      if (!found) {
+        return this.commands.global.printHelp();
+      }
+      return found.printHelp(found.raw);
+    }
+
+    if (!found) {
+      this.emit(`run:*`);
+      return this.emit("afterRun");
     }
 
     // @ts-ignore
     this.emit(`run:${found.name}`);
-    this.emit(`run:*`);
 
     await found.execute(args, options, this.tools);
 
-    this.emit("beforeExit");
+    this.emit("afterRun");
   }
 }

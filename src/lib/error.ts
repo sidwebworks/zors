@@ -3,10 +3,11 @@ export class ZorsError extends Error {
     super(message);
     this.name = this.constructor.name;
 
-    if (typeof Error.captureStackTrace === 'function') {
+    if (typeof Error.captureStackTrace === "function") {
       Error.captureStackTrace(this, this.constructor);
     } else {
-      this.stack = new Error(message).stack;
+      this.stack = new Error(message).stack?.trim();
     }
+
   }
 }

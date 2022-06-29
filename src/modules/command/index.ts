@@ -19,10 +19,17 @@ export class CommandManager {
   tools: AllTools;
 
   constructor(public program: Program) {
-    this.global = new Command("@@Global@@", "");
+    this.global = new Command(program.name, "");
     this.global.link(this);
-
     this.tools = program.tools;
+  }
+
+  get count() {
+    return this.commands.size;
+  }
+
+  get all() {
+    return Array.from(this.commands.values());
   }
 
   parse = (input: string[]) => {
@@ -34,7 +41,7 @@ export class CommandManager {
   private getParserOptions(command?: Command<RawArgs, IOptions>) {
     const config: ParserOptions = {
       alias: {
-        version: ["v"],
+        h: ["help", "h"],
       },
       boolean: [],
     };
@@ -109,10 +116,6 @@ export class CommandManager {
       if (command.isDefault) {
         return command;
       }
-    }
-
-    if (this.global.isImplemented) {
-      return this.global;
     }
   };
 }

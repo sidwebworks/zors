@@ -8,12 +8,7 @@ export class EventsManager<
 > {
   constructor(private events: EventsMap<Events> = new Map()) {}
 
-  on = <K extends keyof Events>(
-    type: K,
-    listener: K extends "onError"
-      ? Listener<{ error: any; program?: Program }>
-      : TypedListener
-  ) => {
+  on = <K extends keyof Events>(type: K, listener: TypedListener) => {
     const listeners = this.events.get(type);
 
     if (listeners) {
@@ -35,10 +30,7 @@ export class EventsManager<
     }
   };
 
-  emit = <K extends keyof Events>(
-    type: K,
-    data?: K extends "onError" ? { error: any; program?: Program } : Events[K]
-  ) => {
+  emit = <K extends keyof Events>(type: K, data?: Events[K]) => {
     const listeners = this.events.get(type);
 
     if (listeners) {

@@ -26,10 +26,13 @@ export function defineCommand<
 
   command.args = findAllBrackets(raw);
 
-  command.aliases = opts.aliases || [];
+  opts.aliases?.forEach((al) => command.alias(al));
 
   opts.options?.forEach((el) =>
-    command.option(el.raw, el.description, el.opts)
+    command.option(el.raw, el.description, {
+      default: el.default,
+      type: el.type,
+    })
   );
 
   opts.examples?.forEach((el) => command.example(el));

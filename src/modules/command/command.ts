@@ -1,17 +1,25 @@
 import { CommandManager } from ".";
 import { ZorsError } from "../../lib/error";
+import { findLongest, padRight } from "../../lib/utils";
 import {
   Action,
   AllTools,
   CommandExample,
+  HelpSection,
   ICommandConfig,
   IOptions,
   IParsedArg,
+  IProgramConfig,
   RawArgs,
   VersionNumber,
 } from "../../types";
 import { Program } from "../program";
 import { Option } from "./option";
+
+const defaulOptions = {
+  allowUnknownOptions: false,
+  ignoreOptionDefaultValue: false,
+};
 
 /**
  * Creates a new instances of the command object
@@ -19,10 +27,10 @@ import { Option } from "./option";
 export class Command<T extends RawArgs, O extends IOptions> {
   private manager?: CommandManager;
   private _action?: Action<T, O>;
-  private _version: VersionNumber = "0.0.0";
-  private _usage: string = "";
   private examples: CommandExample[] = [];
   raw: string = "";
+  _version: VersionNumber = "0.0.0";
+  _usage: string = "";
   aliases: string[] = [];
   args: IParsedArg[] = [];
   options: Option[] = [];
@@ -33,13 +41,7 @@ export class Command<T extends RawArgs, O extends IOptions> {
     public description: string,
     config?: ICommandConfig
   ) {
-    this.config = Object.assign(
-      {
-        allowUnknownOptions: false,
-        ignoreOptionDefaultValue: false,
-      },
-      config
-    );
+    this.config = Object.assign(defaulOptions, config);
   }
 
   get isDefault() {
@@ -47,7 +49,7 @@ export class Command<T extends RawArgs, O extends IOptions> {
   }
 
   get isGlobal(): boolean {
-    return this.name === "@@Global@@";
+    return this.name === this.manager?.program.name;
   }
 
   get isImplemented(): boolean {
@@ -126,6 +128,22 @@ export class Command<T extends RawArgs, O extends IOptions> {
         }
       }
     }
+
+    const allOptions = [...this.manager.global.options, ...this.options];
+
+    for (const option of Object.values(allOptions)) {
+      const value = options[option.name.split(".")[0]];
+
+      // Check required option value
+      if (option.isRequired) {
+        const hasNegated = allOptions.some(
+          (o) => o.isNegated && o.aliases.includes(option.name)
+        );
+        if (value === true || (value === false && !hasNegated)) {
+          throw new ZorsError(`option \`${option.raw}\` value is missing`);
+        }
+      }
+    }
   }
 
   action(func: Action<T, O>): Program {
@@ -133,25 +151,129 @@ export class Command<T extends RawArgs, O extends IOptions> {
     return this.manager?.program as Program;
   }
 
-  printVersion() {
+  getVersion(print = true) {
     if (!this.manager) return;
-
-    const { colors } = this.manager.tools;
 
     const name = (
       this.isGlobal ? this.manager.program.name : this.name
     ).toUpperCase();
 
-    if (!colors.cyan || !colors.green || !colors.bold) {
-      console.log(`${name}/${`v^${this._version}`}`);
+    const config = Object.assign({}, this.manager.program.config!, {
+      tools: this.manager.tools,
+    });
+
+    const customFormatter = config?.formatters?.version;
+
+    let msg;
+
+    if (customFormatter) {
+      msg = customFormatter.apply(config as Required<IProgramConfig>, [
+        this._version,
+        name,
+      ]);
     } else {
-      console.log(
-        colors.bold(
-          `${colors.cyan(name)}/${colors.green(`v^${this._version}`)}`
-        )
-      );
+      msg = `${name}/${`v^${this._version}`}`;
     }
+
+    if (print) {
+      console.log(msg);
+    }
+
+    return msg;
   }
 
-  printHelp() {}
+  printHelp(name: string = "") {
+    const commands = this.manager!.all;
+    const config = this.manager?.program.config as Required<IProgramConfig>;
+    const formatters = config?.formatters;
+
+    const global = this.manager!.global;
+
+    const version = this.getVersion(false) || `${this.name}/v${this._version}`;
+
+    let sections: HelpSection[] = [{ body: version }];
+
+    sections.push({
+      title: "Usage",
+      body: `  $ ${global.name} ${global._usage || global.raw || name}`,
+    });
+
+    const hasCommands = commands.length > 0;
+
+    const show = (global.isGlobal || global.isDefault) && hasCommands;
+
+    if (show) {
+      const longest = findLongest(commands.map((c) => c.raw));
+
+      sections.push({
+        title: "Commands",
+        body: commands
+          .map((c) => `  ${padRight(c.raw, longest.length)}  ${c.description}`)
+          .join("\n"),
+      });
+
+      sections.push({
+        title: `For more info, run any command with the \`--help\` flag`,
+        body: commands
+          .map(
+            (c) =>
+              `  $ ${global.name}${c.name === "" ? "" : ` ${c.name}`} --help`
+          )
+          .join("\n"),
+      });
+    }
+
+    let options = this.isGlobal
+      ? global.options
+      : [...this.options, ...(global.options || [])];
+
+    if (!this.isGlobal && !this.isDefault) {
+      options = options.filter((option) => option.name !== "version");
+    }
+
+    if (options.length > 0) {
+      const longest = findLongest(options.map((option) => option.raw));
+
+      sections.push({
+        title: "Options",
+        body: options
+          .map((o) => {
+            return `  ${padRight(o.raw, longest.length)}  ${o.description} ${
+              o.default === undefined ? "" : `(default: ${o.default})`
+            }`;
+          })
+          .join("\n"),
+      });
+    }
+
+    if (this.examples.length > 0) {
+      sections.push({
+        title: "Examples",
+        body: this.examples
+          .map((example) => {
+            if (typeof example === "function") {
+              return example(this.name);
+            }
+            return example;
+          })
+          .join("\n"),
+      });
+    }
+
+    if (formatters.help) {
+      sections =
+        formatters.help.apply(config as Required<IProgramConfig>, [sections]) ||
+        sections;
+    }
+
+    console.log(
+      sections
+        .map((section) => {
+          return section.title
+            ? `${section.title}:\n${section.body}`
+            : section.body;
+        })
+        .join("\n\n")
+    );
+  }
 }
