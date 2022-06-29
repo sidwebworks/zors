@@ -31,7 +31,6 @@ export function defineCommand<
   opts.options?.forEach((el) =>
     command.option(el.raw, el.description, {
       default: el.default,
-      type: el.type,
     })
   );
 
@@ -42,10 +41,19 @@ export function defineCommand<
   return command;
 }
 
+/**
+ * Creates a new Program
+ * @param name Name of the CLI program
+ * @param version Version number (SEMVER)
+ * @param config
+ * @returns
+ */
 export function zors(
   name: string,
   version?: VersionNumber,
   config?: Omit<IProgramConfig, "tools"> & { tools?: Record<string, any> }
 ): Program {
-  return new Program(name, version, config);
+  return new Program(name, version, config || {});
 }
+
+

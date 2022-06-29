@@ -12,9 +12,9 @@ export class Program {
   constructor(
     public name: string,
     version: VersionNumber = "0.0.0",
-    public config?: IProgramConfig
+    public config: IProgramConfig
   ) {
-    this.tools = Object.assign(this.tools, config?.tools);
+    this.tools = Object.assign({}, this.tools, config?.tools);
     this.commands = new CommandManager(this);
     this.commands.global.version(version);
     this.plugins = new PluginsManager(this).register(config?.plugins || []);

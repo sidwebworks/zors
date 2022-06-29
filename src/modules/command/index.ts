@@ -43,14 +43,22 @@ export class CommandManager {
       alias: {
         h: ["help", "h"],
       },
+      default: {},
       boolean: [],
     };
 
-    const allOptions = [...this.global.options].concat(command?.options || []);
+    const allOptions = this.all.reduce(
+      (acc, curr) => acc.concat(curr.options),
+      [...this.global.options]
+    );
 
     for (const [index, option] of allOptions.entries()) {
       if (option.aliases.length > 0) {
-        config.alias![option.aliases[0]] = option.aliases.slice();
+        config.alias![option.aliases.slice(-1)[0]] = option.aliases.slice();
+      }
+
+      if (option.default) {
+        config.default![option.aliases.slice(-1)[0]] = option.default;
       }
 
       if (option.isBoolean) {

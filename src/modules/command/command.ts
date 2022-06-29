@@ -106,17 +106,19 @@ export class Command<T extends RawArgs, O extends IOptions> {
     return this.options.find((opt) => opt.aliases.includes(_name));
   }
 
-  validate(args: RawArgs, options: IOptions) {
+  validate(args: RawArgs, parsedOptions: IOptions) {
     const required = this.args.filter((a) => a.required);
 
     if (!this.manager) return;
+
+    const options = [...this.manager.global.options, ...this.options];
 
     if (args.length < required.length) {
       throw new ZorsError(`Missing required arg for command \`${this.raw}\``);
     }
 
     if (!this.config?.allowUnknownOptions) {
-      for (const name of Object.keys(options)) {
+      for (const { name } of options) {
         if (
           name !== "--" &&
           !this.hasOption(name) &&
@@ -129,17 +131,19 @@ export class Command<T extends RawArgs, O extends IOptions> {
       }
     }
 
-    const allOptions = [...this.manager.global.options, ...this.options];
-
-    for (const option of Object.values(allOptions)) {
-      const value = options[option.name.split(".")[0]];
+    for (const option of options) {
+      const value = parsedOptions[option.name.split(".")[0]];
 
       // Check required option value
       if (option.isRequired) {
-        const hasNegated = allOptions.some(
+        const hasNegated = options.some(
           (o) => o.isNegated && o.aliases.includes(option.name)
         );
-        if (value === true || (value === false && !hasNegated)) {
+        if (
+          value === true ||
+          (value === false && !hasNegated) ||
+          value === undefined
+        ) {
           throw new ZorsError(`option \`${option.raw}\` value is missing`);
         }
       }
@@ -172,7 +176,7 @@ export class Command<T extends RawArgs, O extends IOptions> {
         name,
       ]);
     } else {
-      msg = `${name}/${`v^${this._version}`}`;
+      msg = `${name}/${`v${this._version}`}`;
     }
 
     if (print) {
@@ -239,7 +243,7 @@ export class Command<T extends RawArgs, O extends IOptions> {
         body: options
           .map((o) => {
             return `  ${padRight(o.raw, longest.length)}  ${o.description} ${
-              o.default === undefined ? "" : `(default: ${o.default})`
+              !o.default ? "" : `(default: ${o.default})`
             }`;
           })
           .join("\n"),
@@ -254,13 +258,13 @@ export class Command<T extends RawArgs, O extends IOptions> {
             if (typeof example === "function") {
               return example(this.name);
             }
-            return example;
+            return `  $ ${example}`;
           })
           .join("\n"),
       });
     }
 
-    if (formatters.help) {
+    if (formatters?.help) {
       sections =
         formatters.help.apply(config as Required<IProgramConfig>, [sections]) ||
         sections;
@@ -268,11 +272,9 @@ export class Command<T extends RawArgs, O extends IOptions> {
 
     console.log(
       sections
-        .map((section) => {
-          return section.title
-            ? `${section.title}:\n${section.body}`
-            : section.body;
-        })
+        .map((section) =>
+          section.title ? `${section.title}:\n${section.body}` : section.body
+        )
         .join("\n\n")
     );
   }
