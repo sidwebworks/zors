@@ -58,23 +58,6 @@ describe('Program()', () => {
     });
   });
 
-  it('should parse variadic arguments', () => {
-    const program = new Program('Test');
-
-    program.command('create <...files>', 'Create command');
-
-    const argv = ['index.html', 'app.js', 'styles.css'];
-
-    const parsed = program.parse(argv);
-
-    expect(parsed).toEqual({
-      args: ['index.html', 'app.js', 'styles.css'],
-      options: {
-        v: false, // Default Version flag
-      },
-    });
-  });
-
   it('should parse regular options', () => {
     const program = new Program('Test');
 

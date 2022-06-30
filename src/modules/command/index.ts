@@ -10,6 +10,7 @@ import {
 } from '../../types';
 import { Program } from '../program';
 import { Command } from './command';
+import { Option } from './option';
 
 /**
  * Creates a new instance of the command manager
@@ -34,22 +35,25 @@ export class CommandManager {
   }
 
   parse = (input: string[]) => {
-    const { _: args, ...options } = parse(input, this.getParserOptions());
+    const parsedOptions = this.all.reduce(
+      (acc, curr) => acc.concat(curr.options),
+      [...this.global.options]
+    );
+
+    const { _: args, ...options } = parse(
+      input,
+      this.getParserOptions(parsedOptions)
+    );
 
     return { args, options };
   };
 
-  private getParserOptions() {
+  private getParserOptions(allOptions: Option[]) {
     const config: ParserOptions = {
       alias: {},
       default: {},
       boolean: [],
     };
-
-    const allOptions = this.all.reduce(
-      (acc, curr) => acc.concat(curr.options),
-      [...this.global.options]
-    );
 
     for (const [index, option] of allOptions.entries()) {
       if (option.aliases.length > 0) {

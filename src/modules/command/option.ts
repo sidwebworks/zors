@@ -8,19 +8,18 @@ export class Option {
   aliases: string[] = [];
   isBoolean: boolean = false;
   isRequired: boolean = false;
+  isVariadic: boolean = false;
   isNegated: boolean = false;
   default?: any;
-  type?: any[];
 
   constructor(
     public raw: string,
     public description: string,
-    opts: { default?: any; type?: any[] }
+    opts: { default?: any }
   ) {
-    const { type, default: defaultValue = null } = opts || {};
+    const { default: defaultValue = null } = opts || {};
 
     this.default = defaultValue;
-    this.type = type;
 
     this.raw = raw.replace(/\.\*/g, '');
 
