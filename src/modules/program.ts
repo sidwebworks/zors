@@ -1,3 +1,4 @@
+import { ZorsError } from '../lib/error';
 import {
   IOptions,
   IParsedArg,
@@ -21,7 +22,10 @@ export class Program {
   constructor(
     public name: string,
     public versionNumber?: VersionNumber,
-    public config?: IProgramConfig
+    public config: IProgramConfig = {
+      printHelpOnNotFound: true,
+      captureErrors: true,
+    }
   ) {
     // Create instances of Manager modules
     this.commands = new CommandManager(this);
@@ -67,8 +71,12 @@ export class Program {
     return this.commands.register;
   }
 
-  get parse() {
-    return this.commands.parse;
+  parse(input: (string | string)[]) {
+    const { args, options } = this.commands.parse(input);
+    this.args = args;
+    this.options = options;
+
+    return { args, options };
   }
 
   async run(argv: (string | string)[]) {
@@ -77,10 +85,7 @@ export class Program {
     const {
       args: [first, ...args],
       options,
-    } = this.commands.parse(argv);
-
-    this.args = args;
-    this.options = options;
+    } = this.parse(argv);
 
     const name = String(first);
 
@@ -88,27 +93,34 @@ export class Program {
 
     const none = !first && args.length === 0;
 
+    // if no command found, see if program implements a global command and use it
     if (!found && this.commands.global.isImplemented) {
       found = this.commands.global;
     }
 
+    // if any command is there, try to validate the input
     found?.validate(args, options);
 
-    if (found && options['v']) {
+    // command is found and input has version flag, print its version
+    if (found && options['version']) {
       found.getVersion();
-    } else if (options['v']) {
-      this.commands.global.getVersion();
+    } else if (options['version'] && none) {
+      // if no command and  print global command's version
+      return this.commands.global.getVersion();
     }
 
-    if ((options['h'] || none) && this.commands.global.hasOption('help')) {
-      if (!found) {
+    // flags has `help` or no input args and command is provided
+    // check and print the found command's help output
+    if ((options['help'] || none) && this.commands.global.hasOption('help')) {
+      if (!found && this.config?.printHelpOnNotFound) {
         return this.commands.global.printHelp();
       }
 
-      return found.printHelp(found.raw);
+      return found?.printHelp(found.raw);
     }
 
     if (!found) {
+      // No command matches, emit the `unknown command` event and exit
       this.emit(`run:*`);
       return this.emit('afterRun');
     }
@@ -116,8 +128,25 @@ export class Program {
     // @ts-ignore
     this.emit(`run:${found.name}`);
 
-    await found.execute(args, options, this.tools);
+    try {
+      const ran = found.execute(args, options, this.tools);
+      if (ran?.then) {
+        await ran;
+      }
+    } catch (error) {
+      // Re-throw if user wants to handle it manually
+      this.handleError(error);
+    }
 
     this.emit('afterRun');
+  }
+
+  private handleError(error: unknown) {
+    if (error instanceof ZorsError) {
+      throw error;
+    } else if (!this.config.captureErrors) {
+      throw error;
+    }
+    this.emit('error');
   }
 }

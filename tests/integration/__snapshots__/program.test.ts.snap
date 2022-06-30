@@ -1,3 +1,9 @@
 // Vitest Snapshot v1
 
+exports[`Program() > should print help output 1`] = `""`;
+
 exports[`Program() > should print the program/command version 1`] = `"GIT/v1.0.0"`;
+
+exports[`Program() > should run the command action 1`] = `"Intialized an empty git repository"`;
+
+exports[`Program() > should run with variadic args 1`] = `"Tracking files:  [ 'index.html', 'app.js', 'styles.css' ]"`;

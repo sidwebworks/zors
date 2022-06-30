@@ -20,8 +20,8 @@
   "scripts": {
     "build": "NODE_ENV=production tsup src/index.ts --dts-resolve",
     "dev": "NODE_ENV=development tsup src/index.ts --watch",
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "test": "vitest run -r tests",
+    "test:watch": "vitest -r tests",
     "prepublishOnly": "pnpm run build",
     "format": "prettier --write ./src"
   },

@@ -1,3 +1,9 @@
 #!/usr/bin/env sh
 
 pnpm run format
+
+pnpm run build
+
+pnpm run test
+
+

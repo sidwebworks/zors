@@ -45,6 +45,7 @@ export class CommandManager {
       alias: {},
       default: {},
       boolean: [],
+      negatable: [],
     };
 
     const allOptions = this.all.reduce(
@@ -64,7 +65,9 @@ export class CommandManager {
       }
 
       if (option.isBoolean) {
-        if (option.isNegated) {
+        if (option.isNegated && Array.isArray(config.negatable)) {
+          config.negatable.push(option.name);
+
           const hasStringTypeOption = allOptions.some((o, i) => {
             return (
               i !== index &&

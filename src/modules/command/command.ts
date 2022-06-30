@@ -11,6 +11,7 @@ import {
   IProgramConfig,
   RawArgs,
   Tools,
+  TypedRawOption,
   VersionNumber,
 } from '../../types';
 import { Program } from '../program';
@@ -58,7 +59,7 @@ export class Command<T extends RawArgs, O extends IOptions> {
 
   version(value: VersionNumber, flags = '-v, --version') {
     this._version = value;
-    this.option(flags, 'Display version number');
+    this.option(flags as TypedRawOption<keyof O>, 'Display version number');
     return this;
   }
 
@@ -83,10 +84,11 @@ export class Command<T extends RawArgs, O extends IOptions> {
   }
 
   option(
-    raw: string,
+    raw: TypedRawOption<keyof O>,
     description: string,
     config: { default?: any; type?: any[] } = {}
   ) {
+    // @ts-ignore
     const item = new Option(raw, description, config);
     this.options.push(item);
     return this;
@@ -116,7 +118,7 @@ export class Command<T extends RawArgs, O extends IOptions> {
 
     const options = [...this.manager.global.options, ...this.options];
 
-    if (args.length < required.length) {
+    if (args!.length < required.length) {
       throw new ZorsError(`Missing required arg for command \`${this.raw}\``);
     }
 

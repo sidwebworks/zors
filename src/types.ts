@@ -60,9 +60,52 @@ export interface IProgramConfig {
   captureErrors?: boolean;
 }
 
-export type RawArgs = (string | number | string[] | number[])[];
+export type RawArgs = (string | number | string[] | number[])[] | undefined;
 
 export type IOptions = Record<string, string | number | boolean>;
+
+type Letter =
+  | 'a'
+  | 'b'
+  | 'c'
+  | 'd'
+  | 'e'
+  | 'f'
+  | 'g'
+  | 'h'
+  | 'i'
+  | 'j'
+  | 'k'
+  | 'l'
+  | 'm'
+  | 'n'
+  | 'o'
+  | 'p'
+  | 'q'
+  | 'r'
+  | 's'
+  | 't'
+  | 'u'
+  | 'v'
+  | 'w'
+  | 'x'
+  | 'y'
+  | 'z';
+
+type FirstLetterOf<S extends string> = string extends S
+  ? string // case where S is just string, not a literal type
+  : {
+      [L in Letter]: S extends `${L}${string}` ? L : never;
+    }[Letter];
+
+type LooseAutoComplete<T extends string> = T | Omit<string, T>;
+
+export type TypedRawOption<T extends string | number | symbol> =
+  T extends string
+    ? LooseAutoComplete<
+        `--${T}` | `-${FirstLetterOf<T>}` | `-${FirstLetterOf<T>}, --${T}`
+      >
+    : string;
 
 export interface Commands {}
 
@@ -102,7 +145,7 @@ export interface DefineCommandOptions<A extends RawArgs, O extends IOptions> {
   version?: VersionNumber;
   examples?: CommandExample[];
   options?: {
-    raw: string;
+    raw: TypedRawOption<keyof O>;
     description: string;
     default?: any;
   }[];

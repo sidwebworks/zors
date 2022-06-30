@@ -6,6 +6,7 @@ import {
   IOptions,
   IProgramConfig,
   RawArgs,
+  TypedRawOption,
   VersionNumber,
 } from './types';
 
@@ -15,16 +16,16 @@ import {
 export function defineCommand<
   A extends RawArgs = RawArgs,
   O extends IOptions = IOptions
->(raw: string, options: DefineCommandOptions<A, O>) {
+>(raw: TypedRawOption<keyof O>, options: DefineCommandOptions<A, O>) {
   const command = new Command<A, O>(
-    removeBrackets(raw),
+    removeBrackets(raw as string),
     options.description,
     options.config
   );
 
-  command.raw = raw;
+  command.raw = raw as string;
 
-  command.args = findAllBrackets(raw);
+  command.args = findAllBrackets(raw as string);
 
   options.aliases?.forEach((al) => command.alias(al));
 
