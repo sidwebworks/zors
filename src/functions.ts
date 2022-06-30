@@ -54,5 +54,5 @@ export function zors(
   version?: VersionNumber,
   config?: Omit<IProgramConfig, 'tools'> & { tools?: Record<string, any> }
 ): Program {
-  return new Program(name, version, config || {});
+  return new Program(name, version, config);
 }

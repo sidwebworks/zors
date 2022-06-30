@@ -1,6 +1,23 @@
 // Vitest Snapshot v1
 
-exports[`Program() > should print help output 1`] = `""`;
+exports[`Program() > should print help output 1`] = `
+"GIT/v1.0.0
+
+Usage:
+  $ git 
+
+Commands:
+  init            Initialize an empty git repository
+  add <...files>  Add files to track
+
+For more info, run any command with the \`--help\` flag:
+  $ git init --help
+  $ git add --help
+
+Options:
+  -v, --version  Display version number 
+  -h, --help     Display help output "
+`;
 
 exports[`Program() > should print the program/command version 1`] = `"GIT/v1.0.0"`;
 
