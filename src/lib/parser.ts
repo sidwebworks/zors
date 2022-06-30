@@ -10,8 +10,8 @@ import {
   ParserFlags,
   ParserOptions,
   ParserResult,
-} from "../types";
-import { ZorsError } from "./error";
+} from '../types';
+import { ZorsError } from './error';
 
 function hasOwn(obj: object, key: string) {
   return Object.prototype.hasOwnProperty.call(obj, key);
@@ -34,7 +34,7 @@ function getForce<T>(obj: Record<string, T>, key: string): T {
 }
 
 function isNumber(x: unknown): boolean {
-  if (typeof x === "number") return true;
+  if (typeof x === 'number') return true;
   if (/^0x[0-9a-f]+$/i.test(String(x))) return true;
   return /^[-+]?(?:\d+(?:\.\d*)?|\.\d+)(e[-+]?\d+)?$/.test(String(x));
 }
@@ -52,7 +52,7 @@ function hasKey(obj: NestedMapping, keys: string[]): boolean {
 export function parse(
   args: string[],
   {
-    "--": doubleDash = false,
+    '--': doubleDash = false,
     alias = {},
     boolean = false,
     default: defaults = {},
@@ -73,10 +73,10 @@ export function parse(
   };
 
   if (boolean !== undefined) {
-    if (typeof boolean === "boolean") {
+    if (typeof boolean === 'boolean') {
       flags.allBools = !!boolean;
     } else {
-      const booleanArgs = typeof boolean === "string" ? [boolean] : boolean;
+      const booleanArgs = typeof boolean === 'string' ? [boolean] : boolean;
 
       for (const key of booleanArgs.filter(Boolean)) {
         flags.bools[key] = true;
@@ -89,7 +89,7 @@ export function parse(
   if (alias !== undefined) {
     for (const key in alias) {
       const val = getForce(alias, key);
-      if (typeof val === "string") {
+      if (typeof val === 'string') {
         aliases[key] = [val];
       } else {
         aliases[key] = val;
@@ -102,7 +102,7 @@ export function parse(
   }
 
   if (string !== undefined) {
-    const stringArgs = typeof string === "string" ? [string] : string;
+    const stringArgs = typeof string === 'string' ? [string] : string;
 
     for (const key of stringArgs.filter(Boolean)) {
       flags.strings[key] = true;
@@ -116,7 +116,7 @@ export function parse(
   }
 
   if (collect !== undefined) {
-    const collectArgs = typeof collect === "string" ? [collect] : collect;
+    const collectArgs = typeof collect === 'string' ? [collect] : collect;
 
     for (const key of collectArgs.filter(Boolean)) {
       flags.collect[key] = true;
@@ -131,7 +131,7 @@ export function parse(
 
   if (negatable !== undefined) {
     const negatableArgs =
-      typeof negatable === "string" ? [negatable] : negatable;
+      typeof negatable === 'string' ? [negatable] : negatable;
 
     for (const key of negatableArgs.filter(Boolean)) {
       flags.negatable[key] = true;
@@ -162,7 +162,7 @@ export function parse(
     collect = true
   ): void {
     let o = obj;
-    const keys = name.split(".");
+    const keys = name.split('.');
     keys.slice(0, -1).forEach(function (key): void {
       if (get(o, key) === undefined) {
         o[key] = {};
@@ -207,16 +207,16 @@ export function parse(
 
   function aliasIsBoolean(key: string): boolean {
     return getForce(aliases, key).some(
-      (x) => typeof get(flags.bools, x) === "boolean"
+      (x) => typeof get(flags.bools, x) === 'boolean'
     );
   }
 
   let notFlags: string[] = [];
 
   // all args after "--" are not parsed
-  if (args.includes("--")) {
-    notFlags = args.slice(args.indexOf("--") + 1);
-    args = args.slice(0, args.indexOf("--"));
+  if (args.includes('--')) {
+    notFlags = args.slice(args.indexOf('--') + 1);
+    args = args.slice(0, args.indexOf('--'));
   }
 
   for (let i = 0; i < args.length; i++) {
@@ -228,14 +228,14 @@ export function parse(
       const [, key, value] = m;
 
       if (flags.bools[key]) {
-        const booleanValue = value !== "false";
+        const booleanValue = value !== 'false';
         setArg(key, booleanValue, arg);
       } else {
         setArg(key, value, arg);
       }
     } else if (
       /^--no-.+/.test(arg) &&
-      get(flags.negatable, arg.replace(/^--no-/, ""))
+      get(flags.negatable, arg.replace(/^--no-/, ''))
     ) {
       const m = arg.match(/^--no-(.+)/);
       assert(m != null);
@@ -255,19 +255,19 @@ export function parse(
         setArg(key, next, arg);
         i++;
       } else if (/^(true|false)$/.test(next)) {
-        setArg(key, next === "true", arg);
+        setArg(key, next === 'true', arg);
         i++;
       } else {
-        setArg(key, get(flags.strings, key) ? "" : true, arg);
+        setArg(key, get(flags.strings, key) ? '' : true, arg);
       }
     } else if (/^-[^-]+/.test(arg)) {
-      const letters = arg.slice(1, -1).split("");
+      const letters = arg.slice(1, -1).split('');
 
       let broken = false;
       for (let j = 0; j < letters.length; j++) {
         const next = arg.slice(j + 2);
 
-        if (next === "-") {
+        if (next === '-') {
           setArg(letters[j], next, arg);
           continue;
         }
@@ -292,12 +292,12 @@ export function parse(
           broken = true;
           break;
         } else {
-          setArg(letters[j], get(flags.strings, letters[j]) ? "" : true, arg);
+          setArg(letters[j], get(flags.strings, letters[j]) ? '' : true, arg);
         }
       }
 
       const [key] = arg.slice(-1);
-      if (!broken && key !== "-") {
+      if (!broken && key !== '-') {
         if (
           args[i + 1] &&
           !/^(-|--)[^-]/.test(args[i + 1]) &&
@@ -307,15 +307,15 @@ export function parse(
           setArg(key, args[i + 1], arg);
           i++;
         } else if (args[i + 1] && /^(true|false)$/.test(args[i + 1])) {
-          setArg(key, args[i + 1] === "true", arg);
+          setArg(key, args[i + 1] === 'true', arg);
           i++;
         } else {
-          setArg(key, get(flags.strings, key) ? "" : true, arg);
+          setArg(key, get(flags.strings, key) ? '' : true, arg);
         }
       }
     } else {
       if (!flags.unknownFn || flags.unknownFn(arg) !== false) {
-        argv._.push(flags.strings["_"] ?? !isNumber(arg) ? arg : Number(arg));
+        argv._.push(flags.strings['_'] ?? !isNumber(arg) ? arg : Number(arg));
       }
       if (stopEarly) {
         argv._.push(...args.slice(i + 1));
@@ -325,7 +325,7 @@ export function parse(
   }
 
   for (const [key, value] of Object.entries(defaults)) {
-    if (!hasKey(argv, key.split("."))) {
+    if (!hasKey(argv, key.split('.'))) {
       setKey(argv, key, value);
 
       if (aliases[key]) {
@@ -337,22 +337,22 @@ export function parse(
   }
 
   for (const key of Object.keys(flags.bools)) {
-    if (!hasKey(argv, key.split("."))) {
+    if (!hasKey(argv, key.split('.'))) {
       const value = get(flags.collect, key) ? [] : false;
       setKey(argv, key, value, false);
     }
   }
 
   for (const key of Object.keys(flags.strings)) {
-    if (!hasKey(argv, key.split(".")) && get(flags.collect, key)) {
+    if (!hasKey(argv, key.split('.')) && get(flags.collect, key)) {
       setKey(argv, key, [], false);
     }
   }
 
   if (doubleDash) {
-    argv["--"] = [];
+    argv['--'] = [];
     for (const key of notFlags) {
-      argv["--"].push(key);
+      argv['--'].push(key);
     }
   } else {
     for (const key of notFlags) {

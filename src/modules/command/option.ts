@@ -1,4 +1,4 @@
-import { camelcaseOptionName, removeBrackets } from "../../lib/utils";
+import { camelcaseOptionName, removeBrackets } from '../../lib/utils';
 
 /**
  * Creates a new instance of option object
@@ -22,16 +22,16 @@ export class Option {
     this.default = defaultValue;
     this.type = type;
 
-    this.raw = raw.replace(/\.\*/g, "");
+    this.raw = raw.replace(/\.\*/g, '');
 
     this.aliases = removeBrackets(raw)
-      .split(",")
+      .split(',')
       .map((v: string) => {
-        let name = v.trim().replace(/^-{1,2}/, "");
+        let name = v.trim().replace(/^-{1,2}/, '');
 
-        if (name.startsWith("no-")) {
+        if (name.startsWith('no-')) {
           this.isNegated = true;
-          name = name.replace(/^no-/, "");
+          name = name.replace(/^no-/, '');
         }
 
         return camelcaseOptionName(name);
@@ -44,9 +44,9 @@ export class Option {
       this.default = true;
     }
 
-    if (raw.includes("<")) {
+    if (raw.includes('<')) {
       this.isRequired = true;
-    } else if (raw.includes("[")) {
+    } else if (raw.includes('[')) {
       this.isRequired = false;
     } else {
       this.isBoolean = true;

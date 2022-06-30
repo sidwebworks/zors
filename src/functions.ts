@@ -1,13 +1,13 @@
-import { findAllBrackets, removeBrackets } from "./lib/utils";
-import { Command } from "./modules/command";
-import { Program } from "./modules/program";
+import { findAllBrackets, removeBrackets } from './lib/utils';
+import { Command } from './modules/command';
+import { Program } from './modules/program';
 import {
   DefineCommandOptions,
   IOptions,
   IProgramConfig,
   RawArgs,
   VersionNumber,
-} from "./types";
+} from './types';
 
 /**
  * A fascade function to create a new instance of Command
@@ -15,28 +15,28 @@ import {
 export function defineCommand<
   A extends RawArgs = RawArgs,
   O extends IOptions = IOptions
->(raw: string, opts: DefineCommandOptions<A, O>) {
+>(raw: string, options: DefineCommandOptions<A, O>) {
   const command = new Command<A, O>(
     removeBrackets(raw),
-    opts.description,
-    opts.config
+    options.description,
+    options.config
   );
 
   command.raw = raw;
 
   command.args = findAllBrackets(raw);
 
-  opts.aliases?.forEach((al) => command.alias(al));
+  options.aliases?.forEach((al) => command.alias(al));
 
-  opts.options?.forEach((el) =>
+  options.options?.forEach((el) =>
     command.option(el.raw, el.description, {
       default: el.default,
     })
   );
 
-  opts.examples?.forEach((el) => command.example(el));
+  options.examples?.forEach((el) => command.example(el));
 
-  command.action(opts.action);
+  command.action(options.action);
 
   return command;
 }
@@ -51,9 +51,7 @@ export function defineCommand<
 export function zors(
   name: string,
   version?: VersionNumber,
-  config?: Omit<IProgramConfig, "tools"> & { tools?: Record<string, any> }
+  config?: Omit<IProgramConfig, 'tools'> & { tools?: Record<string, any> }
 ): Program {
   return new Program(name, version, config || {});
 }
-
-

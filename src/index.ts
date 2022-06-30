@@ -4,11 +4,11 @@ import type {
   VersionNumber,
   Commands,
   IPlugin,
-} from "./types";
+} from './types';
 
-import { Command } from "./modules/command";
-import { Program } from "./modules/program";
-import { zors, defineCommand } from "./functions";
+import { Command } from './modules/command';
+import { Program } from './modules/program';
+import { zors, defineCommand } from './functions';
 
 export { Command, Program, zors, defineCommand };
 

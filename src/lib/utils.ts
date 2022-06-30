@@ -1,4 +1,4 @@
-export const removeBrackets = (raw: string) => raw.replace(/[<[].+/, "").trim();
+export const removeBrackets = (raw: string) => raw.replace(/[<[].+/, '').trim();
 
 export const findAllBrackets = (raw: string) => {
   const ANGLED_BRACKET_RE_GLOBAL = /<([^>]+)>/g;
@@ -10,13 +10,13 @@ export const findAllBrackets = (raw: string) => {
     let variadic = false;
     let value = match[1];
 
-    if (value.startsWith("...")) {
+    if (value.startsWith('...')) {
       value = value.slice(3);
       variadic = true;
     }
 
     return {
-      required: match[0].startsWith("<"),
+      required: match[0].startsWith('<'),
       value,
       variadic,
     };
@@ -46,7 +46,7 @@ export const findLongest = (arr: string[]) => {
 export const padRight = (str: string, length: number) => {
   return str.length >= length
     ? str
-    : `${str}${" ".repeat(length - str.length)}`;
+    : `${str}${' '.repeat(length - str.length)}`;
 };
 
 export const camelcase = (input: string) => {
@@ -57,14 +57,14 @@ export const camelcase = (input: string) => {
 
 export const getFileName = (input: string) => {
   const m = /([^\\\/]+)$/.exec(input);
-  return m ? m[1] : "";
+  return m ? m[1] : '';
 };
 
 export const camelcaseOptionName = (name: string) => {
   return name
-    .split(".")
+    .split('.')
     .map((v, i) => (i === 0 ? camelcase(v) : v))
-    .join(".");
+    .join('.');
 };
 
 export const noop = () => {};

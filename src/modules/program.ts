@@ -1,29 +1,46 @@
-import { AllTools, IProgramConfig, VersionNumber } from "../types";
-import { CommandManager } from "./command";
-import { EventsManager } from "./events";
-import { PluginsManager } from "./plugins";
+import {
+  IOptions,
+  IParsedArg,
+  IProgramConfig,
+  RawArgs,
+  Tools,
+  VersionNumber,
+} from '../types';
+import { CommandManager } from './command';
+import { EventsManager } from './events';
+import { PluginsManager } from './plugins';
 
 export class Program {
   private commands: CommandManager;
   private plugins: PluginsManager;
   private events: EventsManager<Program>;
-  public tools: AllTools = {};
+  public tools: Tools = {};
+  args: (string | number)[] = [];
+  options: IOptions = {};
 
   constructor(
     public name: string,
-    version: VersionNumber = "0.0.0",
-    public config: IProgramConfig
+    public versionNumber: VersionNumber = '0.0.0',
+    public config?: IProgramConfig
   ) {
-    this.tools = Object.assign({}, this.tools, config?.tools);
+    // Create instances of Manager modules
     this.commands = new CommandManager(this);
-    this.commands.global.version(version);
-    this.plugins = new PluginsManager(this).register(config?.plugins || []);
+    this.plugins = new PluginsManager(this);
     this.events = new EventsManager<Program>();
-    this.plugins.attach();
+
+    // Do some intilization stuff
+    this.tools = Object.assign(this.tools, config?.tools);
+    this.plugins.register(config?.plugins || []).attach();
+    this.version(versionNumber);
   }
 
   version(value: VersionNumber) {
     this.commands.global.version(value);
+    return this;
+  }
+
+  help() {
+    this.commands.global.option('-h, --help', 'Display help output');
     return this;
   }
 
@@ -52,12 +69,15 @@ export class Program {
   }
 
   async run(argv: (string | string)[]) {
-    this.emit("beforeRun");
+    this.emit('beforeRun');
 
     const {
       args: [first, ...args],
       options,
     } = this.commands.parse(argv);
+
+    this.args = args;
+    this.options = options;
 
     const name = String(first);
 
@@ -69,22 +89,25 @@ export class Program {
       found = this.commands.global;
     }
 
-    if (found && options["v"]) {
+    found?.validate(args, options);
+
+    if (found && options['v']) {
       found.getVersion();
-    } else if (options["v"]) {
+    } else if (options['v']) {
       this.commands.global.getVersion();
     }
 
-    if (options["h"] || none) {
+    if ((options['h'] || none) && this.commands.global.hasOption('help')) {
       if (!found) {
         return this.commands.global.printHelp();
       }
+
       return found.printHelp(found.raw);
     }
 
     if (!found) {
       this.emit(`run:*`);
-      return this.emit("afterRun");
+      return this.emit('afterRun');
     }
 
     // @ts-ignore
@@ -92,6 +115,6 @@ export class Program {
 
     await found.execute(args, options, this.tools);
 
-    this.emit("afterRun");
+    this.emit('afterRun');
   }
 }

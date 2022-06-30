@@ -1,5 +1,5 @@
-import { IBuildProgram, IPlugin } from "../types";
-import { Program } from "./program";
+import { IPlugin } from '../types';
+import { Program } from './program';
 
 export class PluginsManager {
   private program: Program;
@@ -25,9 +25,9 @@ export class PluginsManager {
 
   attach() {
     this.visit((plugin) => {
-      const next = plugin.build(this.program as IBuildProgram);
-      this.program.tools = Object.assign({}, this.program, next).tools;
-      this.program.config = Object.assign({}, this.program, next).config;
+      const next = plugin.build(this.program);
+      this.program.tools = Object.assign({}, this.program.tools, next.tools);
+      this.program.config = Object.assign({}, this.program.config, next.config);
     });
   }
 

@@ -1,9 +1,8 @@
-import { CommandManager } from ".";
-import { ZorsError } from "../../lib/error";
-import { findLongest, padRight } from "../../lib/utils";
+import { CommandManager } from '.';
+import { ZorsError } from '../../lib/error';
+import { findLongest, padRight } from '../../lib/utils';
 import {
   Action,
-  AllTools,
   CommandExample,
   HelpSection,
   ICommandConfig,
@@ -11,10 +10,11 @@ import {
   IParsedArg,
   IProgramConfig,
   RawArgs,
+  Tools,
   VersionNumber,
-} from "../../types";
-import { Program } from "../program";
-import { Option } from "./option";
+} from '../../types';
+import { Program } from '../program';
+import { Option } from './option';
 
 const defaulOptions = {
   allowUnknownOptions: false,
@@ -28,9 +28,9 @@ export class Command<T extends RawArgs, O extends IOptions> {
   private manager?: CommandManager;
   private _action?: Action<T, O>;
   private examples: CommandExample[] = [];
-  raw: string = "";
-  _version: VersionNumber = "0.0.0";
-  _usage: string = "";
+  raw: string = '';
+  _version: VersionNumber = '0.0.0';
+  _usage: string = '';
   aliases: string[] = [];
   args: IParsedArg[] = [];
   options: Option[] = [];
@@ -45,7 +45,7 @@ export class Command<T extends RawArgs, O extends IOptions> {
   }
 
   get isDefault() {
-    return this.name === "" || this.aliases.includes("!");
+    return this.name === '' || this.aliases.includes('!');
   }
 
   get isGlobal(): boolean {
@@ -53,12 +53,17 @@ export class Command<T extends RawArgs, O extends IOptions> {
   }
 
   get isImplemented(): boolean {
-    return typeof this._action === "function";
+    return typeof this._action === 'function';
   }
 
-  version(value: VersionNumber, flags = "-v, --version") {
+  version(value: VersionNumber, flags = '-v, --version') {
     this._version = value;
-    this.option(flags, "Display version number");
+    this.option(flags, 'Display version number');
+    return this;
+  }
+
+  default() {
+    this.aliases.push('!');
     return this;
   }
 
@@ -91,18 +96,16 @@ export class Command<T extends RawArgs, O extends IOptions> {
     this.manager = manager;
   }
 
-  execute(args: T, options: O, tools: AllTools) {
+  execute(args: T, options: O, tools: Tools) {
     if (!this.isImplemented) {
       throw new ZorsError(`Command ${this.name} is not implemented.`);
     }
-
-    this.validate(args, options);
 
     return this._action!(args, options, tools);
   }
 
   hasOption(name: string) {
-    const _name = name.split(".")[0];
+    const _name = name.split('.')[0];
     return this.options.find((opt) => opt.aliases.includes(_name));
   }
 
@@ -120,7 +123,7 @@ export class Command<T extends RawArgs, O extends IOptions> {
     if (!this.config?.allowUnknownOptions) {
       for (const { name } of options) {
         if (
-          name !== "--" &&
+          name !== '--' &&
           !this.hasOption(name) &&
           !this.manager.global.hasOption(name)
         ) {
@@ -132,7 +135,7 @@ export class Command<T extends RawArgs, O extends IOptions> {
     }
 
     for (const option of options) {
-      const value = parsedOptions[option.name.split(".")[0]];
+      const value = parsedOptions[option.name.split('.')[0]];
 
       // Check required option value
       if (option.isRequired) {
@@ -159,7 +162,7 @@ export class Command<T extends RawArgs, O extends IOptions> {
     if (!this.manager) return;
 
     const name = (
-      this.isGlobal ? this.manager.program.name : this.name
+      this.isGlobal || this.isDefault ? this.manager.program.name : this.name
     ).toUpperCase();
 
     const config = Object.assign({}, this.manager.program.config!, {
@@ -186,7 +189,7 @@ export class Command<T extends RawArgs, O extends IOptions> {
     return msg;
   }
 
-  printHelp(name: string = "") {
+  printHelp(name: string = '') {
     const commands = this.manager!.all;
     const config = this.manager?.program.config as Required<IProgramConfig>;
     const formatters = config?.formatters;
@@ -198,7 +201,7 @@ export class Command<T extends RawArgs, O extends IOptions> {
     let sections: HelpSection[] = [{ body: version }];
 
     sections.push({
-      title: "Usage",
+      title: 'Usage',
       body: `  $ ${global.name} ${global._usage || global.raw || name}`,
     });
 
@@ -210,10 +213,10 @@ export class Command<T extends RawArgs, O extends IOptions> {
       const longest = findLongest(commands.map((c) => c.raw));
 
       sections.push({
-        title: "Commands",
+        title: 'Commands',
         body: commands
           .map((c) => `  ${padRight(c.raw, longest.length)}  ${c.description}`)
-          .join("\n"),
+          .join('\n'),
       });
 
       sections.push({
@@ -221,9 +224,9 @@ export class Command<T extends RawArgs, O extends IOptions> {
         body: commands
           .map(
             (c) =>
-              `  $ ${global.name}${c.name === "" ? "" : ` ${c.name}`} --help`
+              `  $ ${global.name}${c.name === '' ? '' : ` ${c.name}`} --help`
           )
-          .join("\n"),
+          .join('\n'),
       });
     }
 
@@ -232,35 +235,35 @@ export class Command<T extends RawArgs, O extends IOptions> {
       : [...this.options, ...(global.options || [])];
 
     if (!this.isGlobal && !this.isDefault) {
-      options = options.filter((option) => option.name !== "version");
+      options = options.filter((option) => option.name !== 'version');
     }
 
     if (options.length > 0) {
       const longest = findLongest(options.map((option) => option.raw));
 
       sections.push({
-        title: "Options",
+        title: 'Options',
         body: options
           .map((o) => {
             return `  ${padRight(o.raw, longest.length)}  ${o.description} ${
-              !o.default ? "" : `(default: ${o.default})`
+              !o.default ? '' : `(default: ${o.default})`
             }`;
           })
-          .join("\n"),
+          .join('\n'),
       });
     }
 
     if (this.examples.length > 0) {
       sections.push({
-        title: "Examples",
+        title: 'Examples',
         body: this.examples
           .map((example) => {
-            if (typeof example === "function") {
+            if (typeof example === 'function') {
               return example(this.name);
             }
             return `  $ ${example}`;
           })
-          .join("\n"),
+          .join('\n'),
       });
     }
 
@@ -275,7 +278,7 @@ export class Command<T extends RawArgs, O extends IOptions> {
         .map((section) =>
           section.title ? `${section.title}:\n${section.body}` : section.body
         )
-        .join("\n\n")
+        .join('\n\n')
     );
   }
 }

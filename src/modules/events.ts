@@ -1,12 +1,14 @@
-import { Program } from "./program";
-import { EventsMap, Listener, ProgramEvents } from "../types";
+import { Program } from './program';
+import { EventsMap, Listener, ProgramEvents } from '../types';
 
 export class EventsManager<
   P extends Program,
   Events extends Record<ProgramEvents, P> = Record<ProgramEvents, P>,
   TypedListener extends Listener<any> = Listener<Events[keyof Events]>
 > {
-  constructor(private events: EventsMap<Events> = new Map()) {}
+  private events: EventsMap<Events> = new Map();
+
+  constructor() {}
 
   on = <K extends keyof Events>(type: K, listener: TypedListener) => {
     const listeners = this.events.get(type);

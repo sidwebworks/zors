@@ -1,5 +1,5 @@
-import { Command } from "./modules/command";
-import { Program } from "./modules/program";
+import { Command } from './modules/command';
+import { Program } from './modules/program';
 
 export interface ParserFlags {
   bools: Record<string, boolean>;
@@ -10,11 +10,7 @@ export interface ParserFlags {
   allBools: boolean;
 }
 
-
-
-export interface DefaultTools {}
-
-export type AllTools = Omit<DefaultTools, keyof Tools> & Tools;
+export interface Tools {}
 
 export interface ParserResult {
   _: Array<string | number>;
@@ -22,7 +18,7 @@ export interface ParserResult {
 }
 
 export interface ParserOptions {
-  "--"?: boolean;
+  '--'?: boolean;
 
   alias?: Record<string, string | string[]>;
 
@@ -48,7 +44,7 @@ export interface NestedMapping {
 export interface IProgramConfig {
   parser?: ParserOptions;
   plugins?: IPlugin[];
-  tools?: Tools;
+  tools?: Partial<Tools>;
   formatters?: {
     version?: (
       this: Required<IProgramConfig>,
@@ -60,21 +56,21 @@ export interface IProgramConfig {
       sections: HelpSection[]
     ) => HelpSection[];
   };
+  printHelpOnNotFound?: boolean;
+  captureErrors?: boolean;
 }
 
 export type RawArgs = (string | number | string[] | number[])[];
 
 export type IOptions = Record<string, string | number | boolean>;
 
-export interface Tools {}
-
 export interface Commands {}
 
 export type ProgramEvents =
-  | "register"
-  | "error"
-  | "beforeRun"
-  | "afterRun"
+  | 'register'
+  | 'error'
+  | 'beforeRun'
+  | 'afterRun'
   | `run:${keyof Commands}`
   | `run:*`;
 
@@ -95,7 +91,7 @@ export type Action<A extends RawArgs, O extends IOptions = IOptions> = (
   this: Command<A, O>,
   args: A,
   opts: O,
-  tools: AllTools
+  tools: Tools
 ) => Promise<void> | void;
 
 export interface DefineCommandOptions<A extends RawArgs, O extends IOptions> {
@@ -122,13 +118,9 @@ export type EventsMap<
 
 export type Listener<D = unknown> = (data: D) => void;
 
-export type IBuildProgram = Omit<Required<Program>, "run"> & {
-  config: { tools: Record<string, any> };
-};
-
 export interface IPlugin {
   name: string;
-  build: (program: IBuildProgram) => IBuildProgram;
+  build: (program: Program) => Program;
 }
 
 export interface HelpSection {

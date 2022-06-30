@@ -1,14 +1,15 @@
-import { parse } from "../../lib/parser";
-import { findAllBrackets, removeBrackets } from "../../lib/utils";
+import { ZorsError } from '../../lib/error';
+import { parse } from '../../lib/parser';
+import { findAllBrackets, removeBrackets } from '../../lib/utils';
 import {
-  AllTools,
   ICommandConfig,
   IOptions,
   ParserOptions,
   RawArgs,
-} from "../../types";
-import { Program } from "../program";
-import { Command } from "./command";
+  Tools,
+} from '../../types';
+import { Program } from '../program';
+import { Command } from './command';
 
 /**
  * Creates a new instance of the command manager
@@ -16,10 +17,10 @@ import { Command } from "./command";
 export class CommandManager {
   private commands: Map<string, Command<RawArgs, IOptions>> = new Map();
   public global: Command<RawArgs, IOptions>;
-  tools: AllTools;
+  tools: Tools;
 
   constructor(public program: Program) {
-    this.global = new Command(program.name, "");
+    this.global = new Command(program.name, '');
     this.global.link(this);
     this.tools = program.tools;
   }
@@ -38,11 +39,9 @@ export class CommandManager {
     return { args, options };
   };
 
-  private getParserOptions(command?: Command<RawArgs, IOptions>) {
+  private getParserOptions() {
     const config: ParserOptions = {
-      alias: {
-        h: ["help", "h"],
-      },
+      alias: {},
       default: {},
       boolean: [],
     };
@@ -67,7 +66,7 @@ export class CommandManager {
             return (
               i !== index &&
               o.aliases.some((name) => option.aliases.includes(name)) &&
-              typeof o.isRequired === "boolean"
+              typeof o.isRequired === 'boolean'
             );
           });
 
@@ -88,9 +87,17 @@ export class CommandManager {
   }
 
   register = (command: Command<any, any>) => {
+    if (this.commands.has(command.name)) {
+      throw new ZorsError(
+        `A Command is already registered by the name \`${command.name}\``
+      );
+    }
+
     command.link(this);
+
     this.commands.set(command.name, command);
-    this.program.emit("register");
+
+    this.program.emit('register');
 
     return this.program;
   };
