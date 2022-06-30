@@ -35,33 +35,32 @@ export class CommandManager {
   }
 
   parse = (input: string[]) => {
-    const parsedOptions = this.all.reduce(
-      (acc, curr) => acc.concat(curr.options),
-      [...this.global.options]
-    );
-
-    const { _: args, ...options } = parse(
-      input,
-      this.getParserOptions(parsedOptions)
-    );
+    const { _: args, ...options } = parse(input, this.getParserOptions());
 
     return { args, options };
   };
 
-  private getParserOptions(allOptions: Option[]) {
+  private getParserOptions() {
     const config: ParserOptions = {
       alias: {},
       default: {},
       boolean: [],
     };
 
+    const allOptions = this.all.reduce(
+      (acc, curr) => acc.concat(curr.options),
+      [...this.global.options]
+    );
+
     for (const [index, option] of allOptions.entries()) {
+      const last = option.aliases.slice(-1)[0];
+
       if (option.aliases.length > 0) {
-        config.alias![option.aliases.slice(-1)[0]] = option.aliases.slice();
+        config.alias![last] = option.aliases.slice();
       }
 
       if (option.default) {
-        config.default![option.aliases.slice(-1)[0]] = option.default;
+        config.default![last] = option.default;
       }
 
       if (option.isBoolean) {
@@ -75,10 +74,10 @@ export class CommandManager {
           });
 
           if (!hasStringTypeOption && Array.isArray(config.boolean)) {
-            config.boolean.push(option.aliases[0]);
+            config.boolean.push(last);
           }
         } else if (Array.isArray(config.boolean)) {
-          config.boolean.push(option.aliases[0]);
+          config.boolean.push(last);
         }
       }
     }

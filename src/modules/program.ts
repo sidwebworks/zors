@@ -20,7 +20,7 @@ export class Program {
 
   constructor(
     public name: string,
-    public versionNumber: VersionNumber = '0.0.0',
+    public versionNumber?: VersionNumber,
     public config?: IProgramConfig
   ) {
     // Create instances of Manager modules
@@ -31,7 +31,10 @@ export class Program {
     // Do some intilization stuff
     this.tools = Object.assign(this.tools, config?.tools);
     this.plugins.register(config?.plugins || []).attach();
-    this.version(versionNumber);
+
+    if (versionNumber?.trim()) {
+      this.version(versionNumber);
+    }
   }
 
   version(value: VersionNumber) {

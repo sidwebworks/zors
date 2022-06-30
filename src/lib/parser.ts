@@ -12,6 +12,7 @@ import {
   ParserResult,
 } from '../types';
 import { ZorsError } from './error';
+import { camelcaseOptionName } from './utils';
 
 function hasOwn(obj: object, key: string) {
   return Object.prototype.hasOwnProperty.call(obj, key);
@@ -231,7 +232,8 @@ export function parse(
         const booleanValue = value !== 'false';
         setArg(key, booleanValue, arg);
       } else {
-        setArg(key, value, arg);
+        //! MODIFICATION: Parse keys as camel case
+        setArg(camelcaseOptionName(key), value, arg);
       }
     } else if (
       /^--no-.+/.test(arg) &&
@@ -245,6 +247,7 @@ export function parse(
       assert(m != null);
       const [, key] = m;
       const next = args[i + 1];
+
       if (
         next !== undefined &&
         !/^-/.test(next) &&

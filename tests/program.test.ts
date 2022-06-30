@@ -52,9 +52,7 @@ describe('Program()', () => {
 
     expect(parsed).toEqual({
       args: ['hello world', 'create', 'init'],
-      options: {
-        v: false, // Default Version flag
-      },
+      options: {},
     });
   });
 
@@ -63,8 +61,8 @@ describe('Program()', () => {
 
     program
       .command('', 'Default command')
-      .option('-t, --type', 'Type of thing')
-      .option('--name', 'Name of the thing', { default: 'Unknown' })
+      .option('-t, --type [type]', 'Type of thing')
+      .option('--name [name]', 'Name of the thing', { default: 'Unknown' })
       .option('--email-address [email]', 'Email of the thing');
 
     const argv = ['--type=human', '--email-address=thing@gmail.com', '--i'];
@@ -77,9 +75,8 @@ describe('Program()', () => {
         type: 'human',
         t: 'human',
         name: 'Unknown',
-        'email-address': 'thing@gmail.com',
+        emailAddress: 'thing@gmail.com',
         i: true,
-        v: false, // Default Version flag
       },
     });
   });
@@ -103,7 +100,6 @@ describe('Program()', () => {
         emit: false,
         'no-commit': true,
         'no-emit': true,
-        v: false, // Default Version flag
       },
     });
   });
@@ -113,8 +109,8 @@ describe('Program()', () => {
 
     program
       .command('', 'Default command')
-      .option('--env', 'variables to inject in environment')
-      .option('--user', 'user properties');
+      .option('--env <env>', 'variables to inject in environment')
+      .option('--user <user>', 'user properties');
 
     const argv = ['--user.name=sid', '--env.secret=supersecret'];
 
@@ -129,7 +125,6 @@ describe('Program()', () => {
         env: {
           secret: 'supersecret',
         },
-        v: false, // Default Version flag
       },
     });
   });
