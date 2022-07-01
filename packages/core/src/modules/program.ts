@@ -80,9 +80,8 @@ export class Program {
   }
 
   async run(argv: (string | string)[]) {
-
     await this.plugins.attach();
-    
+
     const {
       args: [bin],
     } = this.parse(argv);

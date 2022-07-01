@@ -30,7 +30,7 @@ export class Command<T extends RawArgs, O extends IOptions> {
   private manager?: CommandManager;
   private _action?: Action<T, O>;
   private examples: CommandExample[] = [];
-  raw: string = ''
+  raw: string = '';
   _version: VersionNumber = '0.0.0';
   keys: Record<'help' | 'version', string> = {
     help: 'help',

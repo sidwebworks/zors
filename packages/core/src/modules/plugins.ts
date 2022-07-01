@@ -45,7 +45,7 @@ export class PluginsManager {
   attach() {
     return this.visit(async (plugin) => {
       let next = plugin.build(this.program);
-      
+
       if (!next) {
         throw new ZorsError(
           `Plugins need to return \`program\`, ${plugin.name}: returns ${next}`

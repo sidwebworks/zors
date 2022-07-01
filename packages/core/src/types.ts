@@ -58,7 +58,7 @@ export interface IProgramConfig {
   };
   printHelpOnNotFound?: boolean;
   captureErrors?: boolean;
-  concurrentBootstrap?: boolean
+  concurrentBootstrap?: boolean;
 }
 
 export type RawArgs = (string | number | string[] | number[])[] | undefined;
@@ -101,7 +101,7 @@ type FirstLetterOf<S extends string> = string extends S
 
 type LooseAutoComplete<T extends string> = T | Omit<string, T>;
 
-export type ParsingScopes = LooseAutoComplete<'*' | 'global'>
+export type ParsingScopes = LooseAutoComplete<'*' | 'global'>;
 
 export type TypedRawOption<T extends string | number | symbol> =
   T extends string
@@ -109,7 +109,6 @@ export type TypedRawOption<T extends string | number | symbol> =
         `--${T}` | `-${FirstLetterOf<T>}` | `-${FirstLetterOf<T>}, --${T}`
       >
     : string;
-
 
 export interface Commands {}
 
@@ -145,7 +144,7 @@ export interface DefineCommandOptions<A extends RawArgs, O extends IOptions> {
   description: string;
   usage?: string;
   aliases?: string[];
-  version?: {value?:VersionNumber, flags?: string};
+  version?: { value?: VersionNumber; flags?: string };
   examples?: CommandExample[];
   options?: {
     raw: TypedRawOption<keyof O>;

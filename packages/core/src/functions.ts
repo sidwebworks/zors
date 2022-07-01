@@ -25,7 +25,7 @@ export function defineCommand<
 
   command.raw = raw;
 
-  command.version(options.version?.value, options.version?.flags );
+  command.version(options.version?.value, options.version?.flags);
 
   command.help();
 
