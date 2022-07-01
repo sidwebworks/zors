@@ -5,7 +5,8 @@ import {
   DefineCommandOptions,
   IOptions,
   IProgramConfig,
-  RawArgs, VersionNumber
+  RawArgs,
+  VersionNumber,
 } from './types';
 
 /**
@@ -33,7 +34,7 @@ export function defineCommand<
     })
   );
 
-  command.usage(options.usage || "")
+  command.usage(options.usage || '');
 
   options.examples?.forEach((el) => command.example(el));
 
