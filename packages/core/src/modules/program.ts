@@ -1,11 +1,7 @@
 import { ZorsError } from '../lib/error';
 import {
-  IOptions,
-  IParsedArg,
-  IProgramConfig,
-  RawArgs,
-  Tools,
-  VersionNumber,
+  IOptions, IProgramConfig, Tools,
+  VersionNumber
 } from '../types';
 import { CommandManager } from './command';
 import { EventsManager } from './events';
@@ -14,7 +10,7 @@ import { PluginsManager } from './plugins';
 export class Program {
   private commands: CommandManager;
   private plugins: PluginsManager;
-  private events: EventsManager<Program>;
+  private events: EventsManager;
   public tools: Tools = {};
   args: (string | number)[] = [];
   options: IOptions = {};
@@ -30,7 +26,7 @@ export class Program {
     // Create instances of Manager modules
     this.commands = new CommandManager(this);
     this.plugins = new PluginsManager(this);
-    this.events = new EventsManager<Program>();
+    this.events = new EventsManager();
 
     // Do some intilization stuff
     this.tools = Object.assign(this.tools, config?.tools);
@@ -80,8 +76,6 @@ export class Program {
   }
 
   async run(argv: (string | string)[]) {
-    this.emit('beforeRun');
-
     const {
       args: [first, ...args],
       options,
@@ -115,7 +109,6 @@ export class Program {
       if (!found && this.config?.printHelpOnNotFound) {
         return this.commands.global.printHelp();
       }
-
       return found?.printHelp();
     }
 
@@ -125,7 +118,7 @@ export class Program {
     if (!found) {
       // No command matches, emit the `unknown command` event and exit
       this.emit(`run:*`);
-      return this.emit('afterRun');
+      return this.emit('done');
     }
 
     // @ts-ignore
@@ -140,8 +133,7 @@ export class Program {
       // Re-throw if user wants to handle it manually
       this.handleError(error);
     }
-
-    this.emit('afterRun');
+    this.emit('done');
   }
 
   private handleError(error: unknown) {

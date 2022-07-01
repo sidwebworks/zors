@@ -1,0 +1,16 @@
+{
+  "name": "basic",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "scripts": {
+    "start": "ts-node-esm ./main.ts"
+  },
+  "keywords": [],
+  "author": "sidwebworks",
+  "license": "ISC",
+  "devDependencies": {
+    "ts-node": "^10.8.1",
+    "zors": "workspace:*"
+  }
+}
