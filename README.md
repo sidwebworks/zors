@@ -16,22 +16,26 @@
 1. install `zors`
 
 ```bash
+# to install using npm
 npm install zors
+
+# to install with yarn
 yarn add zors
+
+# to install with pnpm
 pnpm install zors
 ```
 
-2. importing `zors` and creating a new `program` instance
+2. importing `zors` and creating a new `program` instance and then we can start adding commands to it.
 
 ```ts
-import { zors } from '../dist/index.js';
+// main.ts
+import { zors } from 'zors';
 
-const name = 'Test';
-const version = '0.0.0';
+const name = 'my-git';
+const version = '1.0.0';
 const program = zors(name, version);
 ```
-
-This will create a new program instance. Now you can start adding commands.
 
 3. Let's replicate the `git add` command, which accepts a list of files to add to the staging area or it also can add all the changes using `git add .`
 
@@ -45,7 +49,13 @@ program
       console.log(`Tracking files: `, files);
     }
   });
+
+program.run(process.argv.slice(2));
 ```
+
+Usage -
+
+<img src="https://cdn.discordapp.com/attachments/992276677398892617/992388499112198184/unknown.png" width="500px"/>
 
 4. Setting options for commands.
 
@@ -62,4 +72,73 @@ program
       console.log(`Created an initial commit`);
     }
   })
+
+program.run(process.argv.slice(2));
 ```
+
+Usage -
+
+<img src="https://cdn.discordapp.com/attachments/992276677398892617/992388947764334642/unknown.png" width="500px"/>
+
+## Displaying help message
+
+```ts
+// help.ts
+program.
+  help()
+// call the help() method on the program object
+// this will display help message whenever 
+// -h or --help flag is passed 
+// or even if just the name of the program is entered
+
+program.run(process.argv.slice(2));
+```
+
+<!--* For image sid will show some bin thing in package.json -->
+
+## Keeping separate files for each command
+
+If your program's size is greater you should definitely consider code splitting. Here you can use the `program.register()` method to add commands to the programs from different files.
+
+```ts
+// commands.ts
+import { defineCommand } from 'zors';
+
+export const addCommand = defineCommand<string[]>(
+  'add <...files>',
+  {
+    description: "Adds files to track",
+    examples: ["add fileName.txt", "add ."],
+    action(files) {
+      if (files.length === 1 && files[0] === '.') {
+        console.log(`Tracking all files`);
+      } else {
+        console.log(`Tracking files: `, files);
+      }
+    }
+  }
+)
+
+// main.ts
+import zors from 'zors';
+import { addCommand } from './commands/js';
+
+const program = zors("my-git", "1.0.0");
+
+program
+  .register(addCommand);
+
+program.run(process.argv.slice(2));
+```
+
+## API Reference
+
+### The `zors` constructor
+
+Takes three arguments name and versionNumber which are strict and a config object which isn't strict. 
+
+```ts
+constructor(
+  name: string, // name of the program, example: git
+  versionNumber: `${number}.${number}.${number}`, //version 
+)
