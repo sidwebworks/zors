@@ -21,7 +21,8 @@
     "build": "NODE_ENV=production tsup src/index.ts --dts-resolve",
     "dev": "NODE_ENV=development tsup src/index.ts --watch",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "release": "release-it"
   },
   "devDependencies": {
     "@types/node": "^18.0.0",
