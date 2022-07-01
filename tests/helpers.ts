@@ -1,9 +1,14 @@
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { execa } from 'execa';
+import { execa, Options } from 'execa';
 
-export const run = (command: string, example: string, args: any[]) => {
-  return execa(`ts-node-esm`, [getExample(example), command, ...args]);
+export const run = (
+  command: string,
+  example: string,
+  args: any[],
+  opts: Options = {}
+) => {
+  return execa(`ts-node-esm`, [getExample(example), command, ...args], opts);
 };
 
 export const __filename = fileURLToPath(import.meta.url);

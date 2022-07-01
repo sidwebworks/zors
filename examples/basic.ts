@@ -8,7 +8,7 @@ program
     'init',
     'Initialize an empty git repository'
   )
-  .option('-c, --commit', 'stage files and create an initial commit')
+  .option('-c, --commit <boolean>', 'stage files and create an initial commit')
   .action((_, { commit }) => {
     console.log(`Intialized an empty git repository`);
     if (commit) {
@@ -23,5 +23,6 @@ program
       console.log(`Tracking files: `, files);
     }
   });
+
 
 program.run(process.argv.slice(2));

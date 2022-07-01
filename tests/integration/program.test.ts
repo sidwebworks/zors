@@ -9,7 +9,7 @@ describe.concurrent('Program()', () => {
   });
 
   it('should run the command action', async ({ expect }) => {
-    const cli = await run('init', 'basic.ts', []);
+    const cli = await run('init', 'basic.ts', ['--commit=true']);
 
     expect(cli.stdout).toMatchSnapshot();
   });
@@ -29,4 +29,24 @@ describe.concurrent('Program()', () => {
 
     expect(cli.stdout).toMatchSnapshot();
   });
-});
+
+  it('should validate the input args', async ({ expect }) => {
+    try {
+      await run('add', 'basic.ts', []);
+    } catch (error: any) {
+      expect(error.stderr).toMatch(
+        'ZorsError: Missing required arg for command `add <...files>`'
+      );
+    }
+  });
+
+  it('should validate the input options', async ({ expect }) => {
+    try {
+      await run('init', 'basic.ts', []);
+    } catch (error: any) {
+      expect(error.stderr).toMatch(
+        'ZorsError: option `-c, --commit <boolean>` value is missing'
+      );
+    }
+  });
+}); 

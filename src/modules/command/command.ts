@@ -144,6 +144,7 @@ export class Command<T extends RawArgs, O extends IOptions> {
         const hasNegated = options.some(
           (o) => o.isNegated && o.aliases.includes(option.name)
         );
+
         if (
           value === true ||
           (value === false && !hasNegated) ||

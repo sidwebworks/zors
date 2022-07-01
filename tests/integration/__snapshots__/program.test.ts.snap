@@ -21,6 +21,9 @@ Options:
 
 exports[`Program() > should print the program/command version 1`] = `"GIT/v1.0.0"`;
 
-exports[`Program() > should run the command action 1`] = `"Intialized an empty git repository"`;
+exports[`Program() > should run the command action 1`] = `
+"Intialized an empty git repository
+Created an initial commit"
+`;
 
 exports[`Program() > should run with variadic args 1`] = `"Tracking files:  [ 'index.html', 'app.js', 'styles.css' ]"`;
