@@ -1,9 +1,11 @@
 #!/usr/bin/env sh
 
-pnpm run format
+pnpm run format 
 
 pnpm run build
 
-pnpm run test
+pnpm run test 
+
+git add .
 
 
