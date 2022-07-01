@@ -11,34 +11,7 @@ import {
   ParserOptions,
   ParserResult,
 } from '../types';
-import { ZorsError } from './error';
-import { camelcaseOptionName } from './utils';
-
-function hasOwn(obj: object, key: string) {
-  return Object.prototype.hasOwnProperty.call(obj, key);
-}
-
-function assert(exp: any): asserts exp {
-  if (!exp) throw new ZorsError(`Assertion error`);
-}
-
-function get<T>(obj: Record<string, T>, key: string): T | undefined {
-  if (hasOwn(obj, key)) {
-    return obj[key];
-  }
-}
-
-function getForce<T>(obj: Record<string, T>, key: string): T {
-  const v = get(obj, key);
-  assert(v != null);
-  return v;
-}
-
-function isNumber(x: unknown): boolean {
-  if (typeof x === 'number') return true;
-  if (/^0x[0-9a-f]+$/i.test(String(x))) return true;
-  return /^[-+]?(?:\d+(?:\.\d*)?|\.\d+)(e[-+]?\d+)?$/.test(String(x));
-}
+import { assert, camelcaseOptionName, get, getForce, isNumber } from './utils';
 
 function hasKey(obj: NestedMapping, keys: string[]): boolean {
   let o = obj;

@@ -1,3 +1,5 @@
+import { ZorsError } from './error';
+
 export const removeBrackets = (raw: string) => raw.replace(/[<[].+/, '').trim();
 
 export const findAllBrackets = (raw: string) => {
@@ -68,3 +70,29 @@ export const camelcaseOptionName = (name: string) => {
 };
 
 export const noop = () => {};
+
+export function hasOwn(obj: object, key: string) {
+  return Object.prototype.hasOwnProperty.call(obj, key);
+}
+
+export function assert(exp: any): asserts exp {
+  if (!exp) throw new ZorsError(`Assertion error`);
+}
+
+export function get<T>(obj: Record<string, T>, key: string): T | undefined {
+  if (hasOwn(obj, key)) {
+    return obj[key];
+  }
+}
+
+export function getForce<T>(obj: Record<string, T>, key: string): T {
+  const v = get(obj, key);
+  assert(v != null);
+  return v;
+}
+
+export function isNumber(x: unknown): boolean {
+  if (typeof x === 'number') return true;
+  if (/^0x[0-9a-f]+$/i.test(String(x))) return true;
+  return /^[-+]?(?:\d+(?:\.\d*)?|\.\d+)(e[-+]?\d+)?$/.test(String(x));
+}
