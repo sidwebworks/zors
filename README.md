@@ -1,4 +1,3 @@
-
 # Zors 🥇🥈🥉
 
 > A next-gen framework for type-safe command-line applications
@@ -8,6 +7,9 @@
 - 📦 Tiny (zero dependencies)
 - 🔩 Rich Plugin Interface
 - 🔑 Fully Typed APIs
+
+## **THIS PROJECT IS IN BETA**
+> We're actively working on bug fixes, improvements and documentation to get this released ASAP.
 
 ## Quick Start Guide
 
