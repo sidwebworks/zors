@@ -8,7 +8,7 @@ export const run = (
   args: any[],
   opts: Options = {}
 ) => {
-  return execa(`ts-node-esm`, [getExample(example), command, ...args]);
+  return execa(`ts-node-esm`, [getExample(example), command, ...args], opts);
 };
 
 export const __filename = fileURLToPath(import.meta.url);

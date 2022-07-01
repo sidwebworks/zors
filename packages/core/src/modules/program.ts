@@ -15,11 +15,16 @@ export class Program {
   constructor(
     public name: string,
     public versionNumber?: VersionNumber,
-    public config: IProgramConfig = {
-      printHelpOnNotFound: true,
-      captureErrors: true,
-    }
+    public config: IProgramConfig = {}
   ) {
+    this.config = Object.assign(
+      {
+        printHelpOnNotFound: true,
+        captureErrors: true,
+      },
+      config
+    );
+
     // Create instances of Manager modules
     this.commands = new CommandManager(this);
     this.plugins = new PluginsManager(this);
