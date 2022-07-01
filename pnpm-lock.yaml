@@ -4,6 +4,7 @@ importers:
 
   .:
     specifiers:
+      '@release-it/keep-a-changelog': ^3.0.0
       '@types/node': ^18.0.0
       prettier: ^2.7.1
       release-it: ^15.1.1
@@ -12,6 +13,7 @@ importers:
       typescript: ^4.7.4
       vitest: ^0.16.0
     devDependencies:
+      '@release-it/keep-a-changelog': 3.0.0_release-it@15.1.1
       '@types/node': 18.0.0
       prettier: 2.7.1
       release-it: 15.1.1
@@ -244,6 +246,17 @@ packages:
     dependencies:
       '@pnpm/network.ca-file': 1.0.1
       config-chain: 1.1.13
+    dev: true
+
+  /@release-it/keep-a-changelog/3.0.0_release-it@15.1.1:
+    resolution: {integrity: sha512-ZUWbe17/i+HsGIVKOZtEeyALRyCLBvLUzvfG3rXjb7cPetEM82+ZNIHbVpiYFmR+YZT749ftWag98/QZ8/ganQ==}
+    engines: {node: '>=14'}
+    peerDependencies:
+      release-it: ^15.0.0-esm.4
+    dependencies:
+      detect-newline: 4.0.0
+      release-it: 15.1.1
+      string-template: 1.0.0
     dev: true
 
   /@sindresorhus/is/4.6.0:
@@ -843,6 +856,11 @@ packages:
 
   /deprecation/2.3.1:
     resolution: {integrity: sha512-xmHIy4F3scKVwMsQ4WnVaS8bHOx0DmVwRywosKhaILI0ywMDWPtBSku2HNxRvF7jtwDRsoEwYQSfbxj8b7RlJQ==}
+    dev: true
+
+  /detect-newline/4.0.0:
+    resolution: {integrity: sha512-1aXUEPdfGdzVPFpzGJJNgq9o81bGg1s09uxTWsqBlo9PI332uyJRQq13+LK/UN4JfxJbFdCXonUFQ9R/p7yCtw==}
+    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
     dev: true
 
   /diff/4.0.2:
@@ -2911,6 +2929,10 @@ packages:
   /strict-uri-encode/2.0.0:
     resolution: {integrity: sha512-QwiXZgpRcKkhTj2Scnn++4PKtWsH0kpzZ62L2R6c/LUVYv7hVnZqcg2+sMuT6R7Jusu1vviK/MFsu6kNJfWlEQ==}
     engines: {node: '>=4'}
+    dev: true
+
+  /string-template/1.0.0:
+    resolution: {integrity: sha512-SLqR3GBUXuoPP5MmYtD7ompvXiG87QjT6lzOszyXjTM86Uu7At7vNnt2xgyTLq5o9T4IxTYFyGxcULqpsmsfdg==}
     dev: true
 
   /string-width/4.2.3:
