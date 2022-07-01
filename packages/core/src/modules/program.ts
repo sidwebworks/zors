@@ -1,8 +1,5 @@
 import { ZorsError } from '../lib/error';
-import {
-  IOptions, IProgramConfig, Tools,
-  VersionNumber
-} from '../types';
+import { IOptions, IProgramConfig, Tools, VersionNumber } from '../types';
 import { CommandManager } from './command';
 import { EventsManager } from './events';
 import { PluginsManager } from './plugins';

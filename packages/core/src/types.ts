@@ -153,9 +153,10 @@ export interface DefineCommandOptions<A extends RawArgs, O extends IOptions> {
 
 export type EventType = string | symbol;
 
-export type EventsMap<
-  E extends Record<EventType, unknown>,
-> = Map<keyof E, Listener[]>
+export type EventsMap<E extends Record<EventType, unknown>> = Map<
+  keyof E,
+  Listener[]
+>;
 
 export type Listener = () => void;
 
