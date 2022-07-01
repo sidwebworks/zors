@@ -5,6 +5,7 @@ const program = zors('git', '1.0.0');
 
 program
   .help() // Show help
+  .version("1.0.0")
   .command<undefined, { commit: boolean }>(
     'init',
     'Initialize an empty git repository'
@@ -26,6 +27,7 @@ program
     }
   })
   .register(commitCommand)
-  .register(statusCommand)
+  .register(statusCommand);
+
 
 program.run(process.argv.slice(2));

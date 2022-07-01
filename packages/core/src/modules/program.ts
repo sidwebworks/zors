@@ -7,7 +7,8 @@ import { PluginsManager } from './plugins';
 
 const defaultOptions: IProgramConfig = {
   printHelpOnNotFound: true,
-  captureErrors: true,
+  captureErrors: false,
+  concurrentBootstrap: false,
   formatters: {},
   parser: {},
   plugins: [],
@@ -19,6 +20,7 @@ export class Program {
   private plugins: PluginsManager;
   private events: EventsManager;
   public tools: Tools = {};
+
   args: (string | number)[] = [];
   options: IOptions = {};
 
@@ -36,19 +38,20 @@ export class Program {
 
     // Do some intilization stuff
     this.tools = merge(this.tools, config?.tools);
-    this.plugins.register(config?.plugins || []).attach();
+    this.plugins.register(config?.plugins || []);
+
     if (versionNumber?.trim()) {
       this.version(versionNumber);
     }
   }
 
-  version(value: VersionNumber) {
-    this.commands.global.version(value);
+  version(value: VersionNumber, flags?: string) {
+    this.commands.global.version(value, flags);
     return this;
   }
 
-  help() {
-    this.commands.global.option('-h, --help', 'Display help output');
+  help(flags = '-h, --help') {
+    this.commands.global.option(flags, 'Display help output');
     return this;
   }
 
@@ -72,59 +75,69 @@ export class Program {
     return this.commands.register;
   }
 
-  parse(input: (string | string)[]) {
-    const { args, options } = this.commands.parse(input);
-    this.args = args;
-    this.options = options;
-
-    return { args, options };
+  get parse() {
+    return this.commands.parse;
   }
 
   async run(argv: (string | string)[]) {
+
+    await this.plugins.attach();
+    
+    const {
+      args: [bin],
+    } = this.parse(argv);
+
     const {
       args: [first, ...args],
       options,
-    } = this.parse(argv);
+    } = this.parse(argv, bin as string);
+
+    this.args = args;
+    this.options = options;
+
+    // const none = !first && args.length === 0;
 
     const name = String(first);
 
     let found = this.commands.find(name);
 
-    const none = !first && args.length === 0;
+    const global = this.commands.global;
 
     // if no command found, see if program implements a global command and use it
-    if (!found && this.commands.global.isImplemented) {
-      found = this.commands.global;
+    if (global.isImplemented) {
+      found = global;
     }
 
     // command is found and input has version flag, print its version
-    if (found && options['version']) {
-      found.getVersion();
-    } else if (options['version'] && none) {
-      // if no command and  print global command's version
-      return this.commands.global.getVersion();
+    if (found && options[found.keys.version]) {
+      return found.getVersion();
+    } else if (options[global.keys.version]) {
+      // if no command print global command's version
+      return global.getVersion();
     }
 
     // flags has `help` or no input args and command is provided
     // check and print the found command's help output
-    if (
-      (options['help'] || none) &&
-      (found?.hasOption('help') || this.commands.global.hasOption('help'))
-    ) {
-      if (!found && this.config?.printHelpOnNotFound) {
-        return this.commands.global.printHelp();
-      }
-      return found?.printHelp();
+    if (found && options[found.keys.help]) {
+      return found.printHelp();
+    } else if (options[global.keys.help]) {
+      // if no command and  print global command's version
+      return global.printHelp();
     }
-
-    // if any command is there, try to validate the input
-    found?.validate(args, options);
 
     if (!found) {
       // No command matches, emit the `unknown command` event and exit
       this.emit(`run:*`);
+
+      if (this.config?.printHelpOnNotFound) {
+        global.printHelp();
+      }
+
       return this.emit('done');
     }
+
+    // if any command is there, try to validate the input
+    found.validate(args, options);
 
     // @ts-ignore
     this.emit(`run:${found.name}`);

@@ -2,6 +2,7 @@ import { findAllBrackets, removeBrackets } from './lib/utils';
 import { Command } from './modules/command';
 import { Program } from './modules/program';
 import {
+  Commands,
   DefineCommandOptions,
   IOptions,
   IProgramConfig,
@@ -22,7 +23,11 @@ export function defineCommand<
     options.config
   );
 
-  command.raw = raw as string;
+  command.raw = raw;
+
+  command.version(options.version?.value, options.version?.flags );
+
+  command.help();
 
   command.args = findAllBrackets(raw as string);
 

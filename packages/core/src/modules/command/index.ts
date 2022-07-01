@@ -1,10 +1,12 @@
 import { ZorsError } from '../../lib/error';
 import { parse } from '../../lib/parser';
-import { findAllBrackets, removeBrackets } from '../../lib/utils';
+import { findAllBrackets, merge, removeBrackets } from '../../lib/utils';
 import {
+  Commands,
   ICommandConfig,
   IOptions,
   ParserOptions,
+  ParsingScopes,
   RawArgs,
   Tools,
 } from '../../types';
@@ -34,13 +36,28 @@ export class CommandManager {
     return Array.from(this.commands.values());
   }
 
-  parse = (input: string[]) => {
-    const { _: args, ...options } = parse(input, this.getParserOptions());
+  parse = (input: string[], scope?: ParsingScopes) => {
+    let commands = [this.global];
+
+    if (scope === '*') {
+      commands = Array.from(this.commands.values());
+    }
+
+    const found = this.find(String(scope));
+
+    if (scope !== 'global' && found) {
+      commands = [found];
+    }
+
+    const { _: args, ...options } = parse(
+      input,
+      this.getParserOptions(commands)
+    );
 
     return { args, options };
   };
 
-  private getParserOptions() {
+  private getParserOptions(commands: Command<RawArgs, IOptions>[]) {
     const config: ParserOptions = {
       alias: {},
       default: {},
@@ -48,9 +65,9 @@ export class CommandManager {
       negatable: [],
     };
 
-    const allOptions = this.all.reduce(
+    const allOptions = commands.reduce(
       (acc, curr) => acc.concat(curr.options),
-      [...this.global.options]
+      [] as Option[]
     );
 
     for (const [index, option] of allOptions.entries()) {
@@ -85,11 +102,11 @@ export class CommandManager {
       }
     }
 
-    for (let [name, command] of this.commands.entries()) {
-      config.alias![name] = command.aliases;
+    for (let command of commands) {
+      config.alias![command.name] = command.aliases;
     }
 
-    return Object.assign({}, this.program.config?.parser, config);
+    return merge({}, this.program.config?.parser, config);
   }
 
   register = (command: Command<any, any>) => {
@@ -116,6 +133,10 @@ export class CommandManager {
     const command = new Command<A, O>(removeBrackets(raw), description, config);
 
     command.args = findAllBrackets(raw);
+
+    command.version(command._version);
+
+    command.help();
 
     command.raw = raw;
 

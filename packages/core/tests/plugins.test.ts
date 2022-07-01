@@ -7,7 +7,7 @@ describe('PluginsManager()', () => {
     vi.clearAllMocks();
   });
 
-  it('should accept an array of plugins and registers them', () => {
+  it('should accept an array of plugins and registers them', async () => {
     const program = new Program('Test');
     const manager = new PluginsManager(program);
 
@@ -22,13 +22,13 @@ describe('PluginsManager()', () => {
       manager.register(plugin);
     }
 
-    manager.attach();
+    await manager.attach();
 
     expect(buildFn).toHaveBeenCalledTimes(10);
     expect(buildFn).toHaveBeenCalledWith(program);
   });
 
-  it("should allow a plugin to overwrite program's config/tools", () => {
+  it("should allow a plugin to overwrite program's config/tools", async () => {
     const program = new Program('Test');
     const manager = new PluginsManager(program);
 
@@ -49,7 +49,7 @@ describe('PluginsManager()', () => {
       manager.register(plugin);
     }
 
-    manager.attach();
+    await manager.attach();
 
     expect(buildFn).toHaveBeenCalledTimes(10);
 
@@ -57,6 +57,7 @@ describe('PluginsManager()', () => {
 
     expect(program.config).toEqual({
       printHelpOnNotFound: false,
+      concurrentBootstrap:false,
       captureErrors: false,
       formatters: {},
       parser: {},

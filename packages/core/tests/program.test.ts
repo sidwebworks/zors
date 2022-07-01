@@ -18,6 +18,7 @@ describe('Program()', () => {
       plugins: [],
       tools: {},
       captureErrors: false,
+      concurrentBootstrap: false,
       formatters: {},
       parser: {},
       printHelpOnNotFound: true,
@@ -67,7 +68,7 @@ describe('Program()', () => {
 
     const argv = ['--type=human', '--email-address=thing@gmail.com', '--i'];
 
-    const parsed = program.parse(argv);
+    const parsed = program.parse(argv)
 
     expect(parsed).toEqual({
       args: [],
@@ -77,6 +78,8 @@ describe('Program()', () => {
         name: 'Unknown',
         emailAddress: 'thing@gmail.com',
         i: true,
+        help: false,
+        version: false
       },
     });
   });
@@ -100,6 +103,8 @@ describe('Program()', () => {
         emit: false,
         'no-commit': true,
         'no-emit': true,
+        help: false,
+        version: false
       },
     });
   });
@@ -119,6 +124,8 @@ describe('Program()', () => {
     expect(parsed).toEqual({
       args: [],
       options: {
+        help: false,
+        version:false,
         user: {
           name: 'sid',
         },

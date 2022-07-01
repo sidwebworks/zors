@@ -9,8 +9,8 @@
     "moduleResolution": "node",
     "preserveWatchOutput": true,
     "skipLibCheck": true,
+    "strictFunctionTypes": true,
+    "alwaysStrict": true,
     "strict": true
   },
-  "include": ["."],
-  "exclude": ["dist", "build", "node_modules"]
 }

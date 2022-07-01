@@ -4,6 +4,7 @@ import { findLongest, merge, padRight } from '../../lib/utils';
 import {
   Action,
   CommandExample,
+  Commands,
   HelpSection,
   ICommandConfig,
   IOptions,
@@ -29,8 +30,12 @@ export class Command<T extends RawArgs, O extends IOptions> {
   private manager?: CommandManager;
   private _action?: Action<T, O>;
   private examples: CommandExample[] = [];
-  raw: string = '';
+  raw: string = ''
   _version: VersionNumber = '0.0.0';
+  keys: Record<'help' | 'version', string> = {
+    help: 'help',
+    version: 'version',
+  };
   _usage: string = '';
   aliases: string[] = [];
   args: IParsedArg[] = [];
@@ -42,7 +47,7 @@ export class Command<T extends RawArgs, O extends IOptions> {
     public description: string,
     config?: ICommandConfig
   ) {
-    this.config = Object.assign(defaulOptions, config);
+    this.config = merge(defaulOptions, config);
   }
 
   get isDefault() {
@@ -57,13 +62,21 @@ export class Command<T extends RawArgs, O extends IOptions> {
     return typeof this._action === 'function';
   }
 
-  version(value: VersionNumber, flags = '-v, --version') {
+  version(value: VersionNumber = '0.0.0', flags = '-v, --version') {
+    this.options = this.options.filter((o) => !(o.name === this.keys.version));
+
     this._version = value;
-    this.option(flags as TypedRawOption<keyof O>, 'Display version number');
+
+    const item = new Option(flags, 'Display version number', {});
+
+    this.keys.version = item.name;
+
+    this.options.push(item);
+
     return this;
   }
 
-  default() {
+  makeDefault() {
     this.aliases.push('!');
     return this;
   }
@@ -88,9 +101,10 @@ export class Command<T extends RawArgs, O extends IOptions> {
     description: string,
     config: { default?: any; type?: any[] } = {}
   ) {
-    // @ts-ignore
-    const item = new Option(raw, description, config);
+    const item = new Option(raw as string, description, config);
+
     this.options.push(item);
+
     return this;
   }
 
@@ -116,7 +130,7 @@ export class Command<T extends RawArgs, O extends IOptions> {
 
     if (!this.manager) return;
 
-    const options = [...this.manager.global.options, ...this.options];
+    const options = [...this.options];
 
     if (args!.length < required.length) {
       throw new ZorsError(`Missing required arg for command \`${this.raw}\``);
@@ -188,6 +202,11 @@ export class Command<T extends RawArgs, O extends IOptions> {
     }
 
     return msg;
+  }
+
+  help(flags = '-h, --help') {
+    this.option(flags as TypedRawOption<keyof O>, 'Display help output');
+    return this;
   }
 
   printHelp() {

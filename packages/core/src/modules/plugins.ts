@@ -24,20 +24,36 @@ export class PluginsManager {
     return this;
   }
 
-  visit(callback: (p: IPlugin) => void) {
+  async visit(callback: (p: IPlugin) => void | Promise<void>) {
+    if (this.program.config.concurrentBootstrap) {
+      const plugins = Array.from(this.plugins.values());
+
+      const promises = plugins.map((p) => callback(p));
+
+      return Promise.all(promises);
+    }
+
     for (let [_, plugin] of this.plugins.entries()) {
-      callback(plugin);
+      const maybeAsync = callback(plugin);
+
+      if (maybeAsync instanceof Promise) {
+        await maybeAsync;
+      }
     }
   }
 
   attach() {
-    this.visit((plugin) => {
-      const next = plugin.build(this.program);
-
+    return this.visit(async (plugin) => {
+      let next = plugin.build(this.program);
+      
       if (!next) {
         throw new ZorsError(
           `Plugins need to return \`program\`, ${plugin.name}: returns ${next}`
         );
+      }
+
+      if (next instanceof Promise) {
+        next = await next;
       }
 
       const { config, tools } = next;

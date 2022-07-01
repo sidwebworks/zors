@@ -1,9 +1,20 @@
 import { defineCommand } from 'zors';
 
+// Improved type checking for commands
+declare module 'zors' {
+  interface Commands {
+    commit: 'commit';
+    status: 'status';
+    add: 'add';
+    init: 'init';
+  }
+}
+
 export const commitCommand = defineCommand<undefined, { message: string }>(
   'commit',
   {
     description: 'Creates a commit with a given message',
+    version: { value: '0.0.1' },
     options: [
       { raw: '-m, --message <message>', description: 'Commit message' },
     ],
@@ -22,6 +33,7 @@ export const statusCommand = defineCommand<undefined, { verbose: string }>(
     options: [{ raw: '-v, --verbose', description: 'Output verbose' }],
     examples: ['status -v'],
     usage: 'status -v',
+    version: { value: '0.0.5', flags: '-p, --pta-nahi' },
     action(_, { verbose }) {
       const msg = `On branch master
       Your branch is up to date with 'origin/master'.
