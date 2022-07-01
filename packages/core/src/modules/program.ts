@@ -1,8 +1,18 @@
 import { ZorsError } from '../lib/error';
+import { merge } from '../lib/utils';
 import { IOptions, IProgramConfig, Tools, VersionNumber } from '../types';
 import { CommandManager } from './command';
 import { EventsManager } from './events';
 import { PluginsManager } from './plugins';
+
+const defaultOptions: IProgramConfig = {
+  printHelpOnNotFound: true,
+  captureErrors: true,
+  formatters: {},
+  parser: {},
+  plugins: [],
+  tools: {},
+};
 
 export class Program {
   private commands: CommandManager;
@@ -17,13 +27,7 @@ export class Program {
     public versionNumber?: VersionNumber,
     public config: IProgramConfig = {}
   ) {
-    this.config = Object.assign(
-      {
-        printHelpOnNotFound: true,
-        captureErrors: true,
-      },
-      config
-    );
+    this.config = merge(defaultOptions, config);
 
     // Create instances of Manager modules
     this.commands = new CommandManager(this);
@@ -31,9 +35,8 @@ export class Program {
     this.events = new EventsManager();
 
     // Do some intilization stuff
-    this.tools = Object.assign(this.tools, config?.tools);
+    this.tools = merge(this.tools, config?.tools);
     this.plugins.register(config?.plugins || []).attach();
-
     if (versionNumber?.trim()) {
       this.version(versionNumber);
     }

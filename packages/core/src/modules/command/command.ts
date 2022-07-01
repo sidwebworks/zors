@@ -1,6 +1,6 @@
 import { CommandManager } from '.';
 import { ZorsError } from '../../lib/error';
-import { findLongest, padRight } from '../../lib/utils';
+import { findLongest, merge, padRight } from '../../lib/utils';
 import {
   Action,
   CommandExample,
@@ -168,9 +168,7 @@ export class Command<T extends RawArgs, O extends IOptions> {
       this.isGlobal || this.isDefault ? this.manager.program.name : this.name
     ).toUpperCase();
 
-    const config = Object.assign({}, this.manager.program.config!, {
-      tools: this.manager.tools,
-    });
+    const config = this.manager.program.config;
 
     const customFormatter = config?.formatters?.version;
 

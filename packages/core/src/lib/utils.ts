@@ -96,3 +96,28 @@ export function isNumber(x: unknown): boolean {
   if (/^0x[0-9a-f]+$/i.test(String(x))) return true;
   return /^[-+]?(?:\d+(?:\.\d*)?|\.\d+)(e[-+]?\d+)?$/.test(String(x));
 }
+
+export function merge(obj: any, ...sources: any[]) {
+  for (let source of sources) {
+    for (let key in source) {
+      if (!source[key] && typeof source[key] !== 'boolean') continue;
+      obj[key] = replace(obj[key], source[key]);
+    }
+  }
+  return obj;
+}
+
+export const isArray = <T = any>(value: any): value is T =>
+  Array.isArray(value);
+
+export const isObject = (value: any) => value && value.constructor === Object;
+
+const replace = (value: any, next: any) => {
+  if (isArray(value) && isArray(next)) {
+    return next.map((val: any, i: number) => replace(val[i], val));
+  }
+  if (isObject(value) && isObject(next)) {
+    return merge(value, next);
+  }
+  return next;
+};

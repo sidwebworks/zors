@@ -1,3 +1,5 @@
+import { ZorsError } from '../lib/error';
+import { isArray, merge } from '../lib/utils';
 import { IPlugin } from '../types';
 import { Program } from './program';
 
@@ -10,10 +12,15 @@ export class PluginsManager {
     this.program = program;
   }
 
-  register(plugins: IPlugin[]) {
-    for (let plugin of plugins) {
-      this.plugins.set(plugin.name, plugin);
+  register(input: IPlugin[] | IPlugin) {
+    if (isArray<IPlugin[]>(input)) {
+      for (let plugin of input) {
+        this.plugins.set(plugin.name, plugin);
+      }
+    } else {
+      this.plugins.set(input.name, input);
     }
+
     return this;
   }
 
@@ -26,8 +33,19 @@ export class PluginsManager {
   attach() {
     this.visit((plugin) => {
       const next = plugin.build(this.program);
-      this.program.tools = Object.assign({}, this.program.tools, next.tools);
-      this.program.config = Object.assign({}, this.program.config, next.config);
+
+      if (!next) {
+        throw new ZorsError(
+          `Plugins need to return \`program\`, ${plugin.name}: returns ${next}`
+        );
+      }
+
+      const { config, tools } = next;
+
+      this.program.tools = merge(this.program.tools, config?.tools, tools);
+      this.program.config = merge(this.program.config, config, {
+        tools,
+      });
     });
   }
 

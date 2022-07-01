@@ -2,6 +2,7 @@
   "name": "zors-monorepo",
   "private": true,
   "scripts": {
+    "postinstall": "pnpm run build",
     "test": "pnpm --filter \"zors\" test",
     "build": "pnpm --filter \"zors\" build",
     "format": "prettier --write ./packages/**/src"
