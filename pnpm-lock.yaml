@@ -19,11 +19,10 @@ importers:
   examples/basic:
     specifiers:
       ts-node: ^10.8.1
-      zors: link:/Users/sww/Desktop/work/zors/packages/core
-    dependencies:
-      zors: link:../../packages/core
+      zors: workspace:*
     devDependencies:
       ts-node: 10.8.1_qiyc72axg2v44xl4yovan2v55u
+      zors: link:../../packages/core
 
   packages/core:
     specifiers:

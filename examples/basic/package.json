@@ -10,9 +10,7 @@
   "author": "sidwebworks",
   "license": "ISC",
   "devDependencies": {
-    "ts-node": "^10.8.1"
-  },
-  "dependencies": {
-    "zors": "link:/Users/sww/Desktop/work/zors/packages/core"
+    "ts-node": "^10.8.1",
+    "zors": "workspace:*"
   }
 }

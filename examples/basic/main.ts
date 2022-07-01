@@ -1,4 +1,5 @@
 import { zors } from 'zors';
+import { commitCommand } from './commands.js';
 
 const program = zors('git', '1.0.0');
 
@@ -22,6 +23,6 @@ program
     } else {
       console.log(`Tracking files: `, files);
     }
-  });
+  }).register(commitCommand)
 
 program.run(process.argv.slice(2));

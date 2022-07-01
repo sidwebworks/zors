@@ -98,9 +98,6 @@ export class Program {
       found = this.commands.global;
     }
 
-    // if any command is there, try to validate the input
-    found?.validate(args, options);
-
     // command is found and input has version flag, print its version
     if (found && options['version']) {
       found.getVersion();
@@ -111,13 +108,19 @@ export class Program {
 
     // flags has `help` or no input args and command is provided
     // check and print the found command's help output
-    if ((options['help'] || none) && this.commands.global.hasOption('help')) {
+    if (
+      (options['help'] || none) &&
+      (found?.hasOption('help') || this.commands.global.hasOption('help'))
+    ) {
       if (!found && this.config?.printHelpOnNotFound) {
         return this.commands.global.printHelp();
       }
 
-      return found?.printHelp(found.raw);
+      return found?.printHelp();
     }
+
+    // if any command is there, try to validate the input
+    found?.validate(args, options);
 
     if (!found) {
       // No command matches, emit the `unknown command` event and exit

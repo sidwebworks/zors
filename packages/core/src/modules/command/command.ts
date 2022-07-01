@@ -192,7 +192,7 @@ export class Command<T extends RawArgs, O extends IOptions> {
     return msg;
   }
 
-  printHelp(name: string = '') {
+  printHelp() {
     const commands = this.manager!.all;
     const config = this.manager?.program.config as Required<IProgramConfig>;
     const formatters = config?.formatters;
@@ -205,7 +205,7 @@ export class Command<T extends RawArgs, O extends IOptions> {
 
     sections.push({
       title: 'Usage',
-      body: `  $ ${global.name} ${global._usage || global.raw || name}`,
+      body: `  $ ${global.name} ${this._usage || this.raw}`,
     });
 
     const hasCommands = commands.length > 0;
