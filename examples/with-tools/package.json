@@ -1,5 +1,5 @@
 {
-  "name": "basic",
+  "name": "with-tools",
   "version": "1.0.0",
   "description": "",
   "type": "module",
@@ -12,5 +12,11 @@
   "devDependencies": {
     "ts-node": "^10.8.1",
     "zors": "workspace:*"
+  },
+  "dependencies": {
+    "dayjs": "^1.11.3",
+    "picocolors": "^1.0.0",
+    "pino": "^8.1.0",
+    "pino-pretty": "^8.1.0"
   }
 }
