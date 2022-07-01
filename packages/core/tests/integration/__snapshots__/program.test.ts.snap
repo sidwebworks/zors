@@ -10,18 +10,41 @@ Commands:
   init            Initialize an empty git repository
   add <...files>  Add files to track
   commit          Creates a commit with a given message
+  status          Show git tree status
 
 For more info, run any command with the \`--help\` flag:
   $ git init --help
   $ git add --help
   $ git commit --help
+  $ git status --help
 
 Options:
   -v, --version  Display version number 
   -h, --help     Display help output "
 `;
 
-exports[`Program() > should print the program/command version 1`] = `"GIT/v1.0.0"`;
+exports[`Program() > should print the program/command version 1`] = `
+"GIT/v1.0.0
+
+Usage:
+  $ git 
+
+Commands:
+  init            Initialize an empty git repository
+  add <...files>  Add files to track
+  commit          Creates a commit with a given message
+  status          Show git tree status
+
+For more info, run any command with the \`--help\` flag:
+  $ git init --help
+  $ git add --help
+  $ git commit --help
+  $ git status --help
+
+Options:
+  -v, --version  Display version number 
+  -h, --help     Display help output "
+`;
 
 exports[`Program() > should run the command action 1`] = `
 "Intialized an empty git repository

@@ -1,16 +1,12 @@
-import { Program } from './program';
 import { EventsMap, Listener, ProgramEvents } from '../types';
+import { Program } from './program';
 
 export class EventsManager<
-  P extends Program,
-  Events extends Record<ProgramEvents, P> = Record<ProgramEvents, P>,
-  TypedListener extends Listener<any> = Listener<Events[keyof Events]>
+  Events extends Record<ProgramEvents, Program> = Record<ProgramEvents, Program>
 > {
   private events: EventsMap<Events> = new Map();
 
-  constructor() {}
-
-  on = <K extends keyof Events>(type: K, listener: TypedListener) => {
+  on = <K extends keyof Events>(type: K, listener: Listener) => {
     const listeners = this.events.get(type);
 
     if (listeners) {
@@ -20,7 +16,7 @@ export class EventsManager<
     }
   };
 
-  off = <K extends keyof Events>(type: K, listener?: TypedListener) => {
+  off = <K extends keyof Events>(type: K, listener?: Listener) => {
     const listeners = this.events.get(type);
 
     if (listeners) {
@@ -36,8 +32,8 @@ export class EventsManager<
     const listeners = this.events.get(type);
 
     if (listeners) {
-      (listeners as Listener<typeof data>[]).forEach((l) => {
-        l(data);
+      listeners.forEach((listener) => {
+        listener();
       });
     }
   };

@@ -264,7 +264,7 @@ export class Command<T extends RawArgs, O extends IOptions> {
             if (typeof example === 'function') {
               return example(this.name);
             }
-            return `  $ ${example}`;
+            return `  $ ${global.name ? `${global.name} ` : ''}${example}`;
           })
           .join('\n'),
       });

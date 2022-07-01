@@ -112,8 +112,7 @@ export interface Commands {}
 export type ProgramEvents =
   | 'register'
   | 'error'
-  | 'beforeRun'
-  | 'afterRun'
+  | 'done'
   | `run:${keyof Commands}`
   | `run:*`;
 
@@ -154,12 +153,12 @@ export interface DefineCommandOptions<A extends RawArgs, O extends IOptions> {
 
 export type EventType = string | symbol;
 
-export type EventsMap<
-  E extends Record<EventType, unknown>,
-  D = E[keyof E]
-> = Map<keyof E, Listener<D>[]>;
+export type EventsMap<E extends Record<EventType, unknown>> = Map<
+  keyof E,
+  Listener[]
+>;
 
-export type Listener<D = unknown> = (data: D) => void;
+export type Listener = () => void;
 
 export interface IPlugin {
   name: string;
