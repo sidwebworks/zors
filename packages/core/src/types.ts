@@ -22,7 +22,7 @@ export interface ParserOptions {
    * the result `['--']` with everything after the `--`. Here's an example:
    * Defaults to `false`.
    */
-  "--"?: boolean;
+  '--'?: boolean;
 
   /** An object mapping string names to strings or arrays of string argument
    * names to use as aliases. */
@@ -103,7 +103,7 @@ export interface IProgramConfig {
   /**
    * Enable concurrent initialization for bootstrapping plugins, if your plugins depend on each other,
    * we suggest keeping disabling this, as it won't run your plugins sequentially.
-   * @default false 
+   * @default false
    */
   concurrentBootstrap?: boolean;
 }
