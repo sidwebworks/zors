@@ -1,4 +1,4 @@
-import { zors } from '../dist/index.js';
+import { zors } from 'zors';
 
 const program = zors('git', '1.0.0');
 
@@ -23,6 +23,5 @@ program
       console.log(`Tracking files: `, files);
     }
   });
-
 
 program.run(process.argv.slice(2));

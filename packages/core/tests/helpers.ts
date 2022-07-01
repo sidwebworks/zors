@@ -8,16 +8,15 @@ export const run = (
   args: any[],
   opts: Options = {}
 ) => {
-  return execa(`ts-node-esm`, [getExample(example), command, ...args], opts);
+  return execa(`ts-node-esm`, [getExample(example), command, ...args]);
 };
 
 export const __filename = fileURLToPath(import.meta.url);
 
 export const __dirname = dirname(__filename);
 
-export const getExample = (file: string) => {
-  return path.relative(
-    process.cwd(),
-    path.join(__dirname, '../examples', file)
-  );
+export const getExample = (name: string) => {
+  const result = path.relative(__dirname ,path.join('../examples', name, 'main.ts'));
+
+  return result;
 };

@@ -1,0 +1,30 @@
+{
+  "name": "zors",
+  "version": "0.0.0",
+  "license": "MIT",
+  "type": "module",
+  "author": "Sidwebworks",
+  "description": "A CLI Framework",
+  "publishConfig": {
+    "access": "public"
+  },
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "import": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "NODE_ENV=production tsup src/index.ts --dts-resolve",
+    "dev": "NODE_ENV=development tsup src/index.ts --watch",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "execa": "^6.1.0"
+  }
+}

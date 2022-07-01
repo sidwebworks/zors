@@ -1,33 +1,12 @@
 {
-  "name": "zors",
-  "version": "0.0.0",
-  "license": "MIT",
-  "type": "module",
-  "author": "Sidwebworks",
-  "description": "A CLI Framework",
-  "publishConfig": {
-    "access": "public"
-  },
-  "sideEffects": false,
-  "files": [
-    "dist"
-  ],
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    "import": "./dist/index.js"
-  },
+  "name": "zors-monorepo",
+  "private": true,
   "scripts": {
-    "build": "NODE_ENV=production tsup src/index.ts --dts-resolve",
-    "dev": "NODE_ENV=development tsup src/index.ts --watch",
-    "test": "vitest run -r tests",
-    "test:watch": "vitest -r tests",
-    "prepublishOnly": "pnpm run build",
-    "format": "prettier --write ./src"
+    "test": "pnpm --filter \"zors\" test",
+    "build": "pnpm --filter \"zors\" build",
+    "format": "prettier --write ./packages/**/src"
   },
   "devDependencies": {
-    "@types/node": "^18.0.0",
-    "execa": "^6.1.0",
     "prettier": "^2.7.1",
     "ts-node": "^10.8.1",
     "tsup": "^6.1.2",
