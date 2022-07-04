@@ -6,7 +6,7 @@ export class ZorsError extends Error {
     if (typeof Error.captureStackTrace === 'function') {
       Error.captureStackTrace(this, this.constructor);
     } else {
-      this.stack = new Error(message).stack?.trim();
+      this.stack = new Error(message)?.stack;
     }
   }
 }

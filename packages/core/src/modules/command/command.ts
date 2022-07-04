@@ -32,11 +32,11 @@ export class Command<T extends RawArgs, O extends IOptions> {
   private examples: CommandExample[] = [];
   raw: string = '';
   _version: VersionNumber = '0.0.0';
+  _usage: string = '';
   keys: Record<'help' | 'version', string> = {
     help: 'help',
     version: 'version',
   };
-  _usage: string = '';
   aliases: string[] = [];
   args: IParsedArg[] = [];
   options: Option[] = [];
