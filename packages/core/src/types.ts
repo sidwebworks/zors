@@ -108,7 +108,9 @@ export interface IProgramConfig {
   concurrentBootstrap?: boolean;
 }
 
-export type RawArgs = (string | number | string[] | number[])[] | undefined;
+type Arg = string | number | undefined;
+
+export type RawArgs = (Arg | Arg[])[] | undefined;
 
 export type IOptions = Record<string, string | number | boolean>;
 

@@ -59,6 +59,7 @@ export class PluginsManager {
       const { config, tools } = next;
 
       this.program.tools = merge(this.program.tools, config?.tools, tools);
+
       this.program.config = merge(this.program.config, config, {
         tools,
       });
