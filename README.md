@@ -144,8 +144,8 @@ We rely on Typescript types to auto-generate API documentation [find it here](ht
 
 ## Packages
 
-| Package               | Version (click for changelogs)                                                                 |
-| --------------------- | :--------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | --- |
+| Package | Version (click for changelogs) |
+|---|----|
 | [zors](packages/core) | [![zors version](https://img.shields.io/npm/v/zors.svg?label=%20)](packages/core/CHANGELOG.md) |
-| <!--                  | [@zors/plugin-ui](packages/plugin-ui)                                                          | [![plugin-ui version](https://img.shields.io/npm/v/@zors/plugin-react.svg?label=%20)](packages/plugin-react/CHANGELOG.md) | --> |
-| <!--                  | [create-zors](packages/create-zors)                                                            | [![create-zors version](https://img.shields.io/npm/v/create-vite.svg?label=%20)](packages/create-vite/CHANGELOG.md)       | --> |
+<!--                  | [@zors/plugin-ui](packages/plugin-ui)                                                          | [![plugin-ui version](https://img.shields.io/npm/v/@zors/plugin-react.svg?label=%20)](packages/plugin-react/CHANGELOG.md) | --> 
+<!--                  | [create-zors](packages/create-zors)                                                            | [![create-zors version](https://img.shields.io/npm/v/create-vite.svg?label=%20)](packages/create-vite/CHANGELOG.md)       | --> 
