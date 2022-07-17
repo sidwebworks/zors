@@ -47,7 +47,7 @@ which will be later used for automatic help generation.
 > Its recommended to keep your program name same as the `bin` name in your `package.json`
 
 ```ts
-// in main.[js | ts]
+// in main.[js | ts] ...
 
 import { zors } from 'zors';
 
@@ -56,24 +56,16 @@ const version = '1.0.0';
 
 const program = zors(name, version);
 
-// let's build a git cli
+// let's build a simple git cli
 program
   .command('init', 'Initialize an empty git repository')
   .option(
     '-q, --quiet',
     'Only print error and warning messages; all other output will be suppressed.'
   )
-  .option(
-    '-t, --template <template directory>',
-    'Specify the directory from which templates will be used.'
-  )
   .action((args, options, tools) => {
     if (!options.quiet) {
       console.log('Initialized an empty git repository');
-    }
-
-    if (options.template) {
-      console.log('used template: ', options.template);
     }
 
     process.exit(0);
