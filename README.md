@@ -1,8 +1,16 @@
-# Zors 🥇
+<div align="center">
+  
+  <img src=".github/logo.png" width="220px" alt="zors logo">
 
-![zors version](https://img.shields.io/npm/v/zors)
-[![install size](https://packagephobia.com/badge?p=zors)](https://packagephobia.com/result?p=zors)
-![zors license](https://img.shields.io/github/license/sidwebworks/zors)
+  <br> 
+  <br> 
+  
+  ![zors version](https://img.shields.io/npm/v/zors)
+  [![install size](https://packagephobia.com/badge?p=zors)](https://packagephobia.com/result?p=zors)
+  ![zors license](https://img.shields.io/github/license/sidwebworks/zors)
+</div>
+
+# Zors 🥇
 
 > Next-gen framework for building modern, type-safe command-line applications.
 
@@ -38,6 +46,7 @@ yarn add zors
 # with pnpm
 pnpm add zors
 ```
+
 
 ## Quick Start Guide
 
@@ -111,6 +120,12 @@ Let's try **running** it. In Node to get the standard input `argv` we can use `p
 await program.run(process.argv.slice(2));
 ```
 
+<div align="right"> 
+  
+  🔝 [scroll to top](#table-of-contents)
+  
+</div> 
+
 ## Usage
 
 ### Display Help Message and Version
@@ -130,6 +145,12 @@ program
 program.run(process.argv.slice(2));
 ```
 
+<div align="right"> 
+  
+  🔝 [scroll to top](#table-of-contents)
+  
+</div> 
+
 ## API Reference
 
 We rely on Typescript types to auto-generate API documentation [find it here](https://paka.dev/npm/zors)
@@ -141,3 +162,9 @@ We rely on Typescript types to auto-generate API documentation [find it here](ht
 | [zors](packages/core) | [![zors version](https://img.shields.io/npm/v/zors.svg?label=%20)](packages/core/CHANGELOG.md) |
 <!--                  | [@zors/plugin-ui](packages/plugin-ui)                                                          | [![plugin-ui version](https://img.shields.io/npm/v/@zors/plugin-react.svg?label=%20)](packages/plugin-react/CHANGELOG.md) | --> 
 <!--                  | [create-zors](packages/create-zors)                                                            | [![create-zors version](https://img.shields.io/npm/v/create-vite.svg?label=%20)](packages/create-vite/CHANGELOG.md)       | --> 
+
+<div align="right"> 
+  
+  🔝 [scroll to top](#table-of-contents)
+  
+</div> 
