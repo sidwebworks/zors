@@ -30,4 +30,14 @@ exports[`Program() > should run the command action 1`] = `
 Created an initial commit"
 `;
 
+exports[`Program() > should run with plugins 1`] = `
+"Intialized an empty git repository
+Created an initial commit"
+`;
+
+exports[`Program() > should run with tools 1`] = `
+"[32mINFO[39m: [36mIntialized an empty git repository[39m
+[32mINFO[39m: [36mCreated an initial commit[39m"
+`;
+
 exports[`Program() > should run with variadic args 1`] = `"Tracking files:  [ 'index.html', 'app.js', 'styles.css' ]"`;

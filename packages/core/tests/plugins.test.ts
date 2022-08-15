@@ -35,7 +35,7 @@ describe('PluginsManager()', () => {
     const buildFn = vi.fn<[Program]>((program) => {
       program.config.printHelpOnNotFound = false;
       program.config.captureErrors = false;
-      program.config.tools = { hello: 'world', logger: console.log };
+      program.tools = { hello: 'world', logger: console.log };
 
       return program;
     });
@@ -57,15 +57,12 @@ describe('PluginsManager()', () => {
 
     expect(program.config).toEqual({
       printHelpOnNotFound: false,
-      concurrentBootstrap:false,
+      concurrentBootstrap: false,
       captureErrors: false,
       formatters: {},
       parser: {},
       plugins: [],
-      tools: {
-        hello: 'world',
-        logger: console.log,
-      },
+      tools: {},
     });
 
     expect(program.tools).toEqual({

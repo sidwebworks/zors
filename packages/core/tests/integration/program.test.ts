@@ -47,6 +47,16 @@ describe.concurrent('Program()', async () => {
       );
     }
   });
+
+  it('should run with plugins', async ({ expect }) => {
+    const cli = await run('init', 'with-plugins', ['--commit=true']);
+
+    expect(cli.stdout).toMatchSnapshot();
+  });
+
+  it('should run with tools', async ({ expect }) => {
+    const cli = await run('init', 'with-tools', ['--commit=true']);
+
+    expect(cli.stdout).toMatchSnapshot();
+  });
 });
-
-

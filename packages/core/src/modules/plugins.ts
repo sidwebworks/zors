@@ -43,7 +43,7 @@ export class PluginsManager {
   }
 
   attach() {
-    return this.visit(async (plugin) => {
+    return this.visit((plugin) => {
       let next = plugin.build(this.program);
 
       if (!next) {
@@ -53,16 +53,12 @@ export class PluginsManager {
       }
 
       if (next instanceof Promise) {
-        next = await next;
+        next.then((prog) => {
+          this.program = prog;
+        });
+      } else {
+        this.program = next;
       }
-
-      const { config, tools } = next;
-
-      this.program.tools = merge(this.program.tools, config?.tools, tools);
-
-      this.program.config = merge(this.program.config, config, {
-        tools,
-      });
     });
   }
 

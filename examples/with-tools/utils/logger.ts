@@ -23,8 +23,9 @@ export const logger = pino({
   },
   base: {
     pid: false,
+
   },
-  timestamp: () => `, "time": "${dayjs().format()}"`,
+  timestamp: () => ``,
 });
 
 

@@ -26,7 +26,7 @@ export const loggerPlugin = (options?: PinoPretty.PrettyOptions): IPlugin => {
         base: {
           pid: false,
         },
-        timestamp: () => `, "time": "${dayjs().format()}"`,
+        timestamp: () => ``,
       });
 
       return program;

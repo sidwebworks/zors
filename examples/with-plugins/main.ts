@@ -3,14 +3,7 @@ import { asyncPlugin, colorsPlugin, loggerPlugin } from './plugins.js';
 
 // Add your tools inside config
 const program = zors('git', '1.0.0', {
-  plugins: [
-    asyncPlugin(),
-    colorsPlugin(),
-    loggerPlugin({
-      colorize: true,
-      levelFirst: true,
-    }),
-  ],
+  plugins: [colorsPlugin()],
 });
 
 program
@@ -21,15 +14,13 @@ program
   )
   .option('-c, --commit', 'stage files and create an initial commit')
   .example('init --no-commit')
-  .action((_, { commit }, { logger, colors, directory }) => {
-    logger.info(
+  .action((_, { commit }, { logger, colors }) => {
+    console.log(
       colors.bgGreen(colors.black(`Intialized an empty git repository`))
     );
 
-    logger.info(directory);
-
     if (commit) {
-      logger.info(`Created an initial commit`);
+      console.log(`Created an initial commit`);
     }
   });
 
