@@ -1,5 +1,12 @@
 
 
+## [0.1.4](https://github.com/sidwebworks/coot/compare/0.1.3...0.1.4) (2022-08-15)
+
+
+### Bug Fixes
+
+* support both ESM and CJS :( ([6fefbaa](https://github.com/sidwebworks/coot/commit/6fefbaae9cc7ce8349ca8bb040125e00559781cb))
+
 ## [0.1.3](https://github.com/sidwebworks/coot/compare/0.1.2...0.1.3) (2022-07-04)
 
 
