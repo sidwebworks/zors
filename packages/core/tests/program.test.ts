@@ -63,7 +63,7 @@ describe('Program()', () => {
     program
       .command('', 'Default command')
       .option('-t, --type [type]', 'Type of thing')
-      .option('--name [name]', 'Name of the thing', { default: 'Unknown' })
+      .option('--name [name]', 'Name of the thing', 'Unknown')
       .option('--email-address [email]', 'Email of the thing');
 
     const argv = ['--type=human', '--email-address=thing@gmail.com', '--i'];

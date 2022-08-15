@@ -23,6 +23,8 @@ export class Option {
 
     this.raw = raw.replace(/\.\*/g, '');
 
+    this.isVariadic = /\w\.\.\.[>\]]$/.test(raw);
+
     this.aliases = removeBrackets(raw)
       .split(',')
       .map((v: string) => {

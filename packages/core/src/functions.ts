@@ -34,9 +34,7 @@ export function defineCommand<
   options.aliases?.forEach((al) => command.alias(al));
 
   options.options?.forEach((el) =>
-    command.option(el.raw, el.description, {
-      default: el.default,
-    })
+    command.option(el.raw, el.description, el.default)
   );
 
   command.usage(options.usage || '');

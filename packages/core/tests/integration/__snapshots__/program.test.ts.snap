@@ -7,10 +7,10 @@ Usage:
   $ git 
 
 Commands:
-  init            Initialize an empty git repository
-  add <...files>  Add files to track
-  commit          Creates a commit with a given message
-  status          Show git tree status
+  init    Initialize an empty git repository
+  add     Add files to track
+  commit  Creates a commit with a given message
+  status  Show git tree status
 
 For more info, run any command with the \`--help\` flag:
   $ git init --help

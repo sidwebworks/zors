@@ -12,8 +12,8 @@ export const findAllBrackets = (raw: string) => {
     let variadic = false;
     let value = match[1];
 
-    if (value.startsWith('...')) {
-      value = value.slice(3);
+    if (value.endsWith('...')) {
+      value = value.slice(-3);
       variadic = true;
     }
 

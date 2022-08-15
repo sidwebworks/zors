@@ -4,7 +4,6 @@ import { findLongest, merge, padRight } from '../../lib/utils';
 import {
   Action,
   CommandExample,
-  Commands,
   HelpSection,
   ICommandConfig,
   IOptions,
@@ -77,7 +76,9 @@ export class Command<T extends RawArgs, O extends IOptions> {
   }
 
   makeDefault() {
-    this.aliases.push('!');
+    if (!this.isDefault) {
+      this.aliases.push('!');
+    }
     return this;
   }
 
@@ -99,9 +100,11 @@ export class Command<T extends RawArgs, O extends IOptions> {
   option(
     raw: TypedRawOption<keyof O>,
     description: string,
-    config: { default?: any; type?: any[] } = {}
+    defaultValue?: O[keyof O]
   ) {
-    const item = new Option(raw as string, description, config);
+    const item = new Option(raw as string, description, {
+      default: defaultValue,
+    });
 
     this.options.push(item);
 
