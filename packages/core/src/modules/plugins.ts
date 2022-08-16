@@ -53,12 +53,12 @@ export class PluginsManager {
       }
 
       if (next instanceof Promise) {
-        next.then((prog) => {
-          this.program = prog;
+        return next.then((p) => {
+          this.program = p;
         });
-      } else {
-        this.program = next;
       }
+
+      this.program = next;
     });
   }
 
