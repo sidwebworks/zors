@@ -1,5 +1,12 @@
 
 
+## [0.1.6](https://github.com/sidwebworks/coot/compare/0.1.5...0.1.6) (2022-08-16)
+
+
+### Bug Fixes
+
+* plugin loading order ([185c61d](https://github.com/sidwebworks/coot/commit/185c61d3702d6332128e3baabbcb6bbff4190537))
+
 ## [0.1.5](https://github.com/sidwebworks/coot/compare/0.1.4...0.1.5) (2022-08-15)
 
 
